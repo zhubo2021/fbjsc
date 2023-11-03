@@ -19,34 +19,38 @@ export default {
         [
           {
             name: "一级重大危险源",
-            value: 555,
+            value: 10,
             itemStyle: {
               color: "#ED3F32",
+              opacity: 0.6,
             },
           },
           {
             name: "二级重大危险源",
-            value: 555,
+            value: 20,
             itemStyle: {
               color: "#EF6D21",
+              opacity: 0.6,
             },
           },
           {
             name: "三级重大危险源",
-            value: 5555,
+            value: 30,
             itemStyle: {
               color: "#F7B115",
+              opacity: 0.6,
             },
           },
           {
             name: "四级重大危险源",
-            value: 555,
+            value: 50,
             itemStyle: {
               color: "#0D79D3",
+              opacity: 0.6,
             },
           },
         ],
-        0.7,
+        0.7, // 圆圈宽度
       )
 
       if (option) {
@@ -236,13 +240,15 @@ export default {
         grid3D: {
           show: false,
           boxHeight: 5,
-          // boxDepth: 140,
+          // 控制饼图大小
+          boxDepth: 80,
+          boxWidth: 80,
           viewControl: {
             //3d效果可以放大、旋转等，请自己去查看官方配置
             animation: false,
             alpha: 25,
-            rotateSensitivity: 0,
-            zoomSensitivity: 1,
+            rotateSensitivity: [0.5, 0], // 旋转  0代表不转
+            zoomSensitivity: 0,
             panSensitivity: 0,
             distance: 120,
             center: [0, -20, 0],
@@ -265,7 +271,7 @@ export default {
       return option
     },
   },
-  created() {
+  mounted() {
     this.get3Dpie()
   },
 }
@@ -273,5 +279,10 @@ export default {
 
 <style lang="less">
 .tempvue {
+  .risk__left {
+    width: 500px;
+    height: 500px;
+    border: 1px solid #000;
+  }
 }
 </style>
