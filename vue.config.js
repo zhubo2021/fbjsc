@@ -10,8 +10,8 @@ module.exports = {
     // open: true,
     // proxy: 'http://localhost:8081'
   },
-  // publicPath: "/zhoushan",
-  // outputDir: "zhoushan",
+  publicPath: "/fbjsc",
+  outputDir: "fbjsc",
   chainWebpack: config => {
     config.module
       .rule("vue")
