@@ -4,6 +4,7 @@ import App from "./App3.vue"
 // import { router } from "./router"
 // import store from "./store"
 import dayjs from "dayjs"
+import "echarts-gl"
 let localizedFormat = require("dayjs/plugin/localizedFormat")
 dayjs.extend(localizedFormat)
 dayjs().format("L LT")

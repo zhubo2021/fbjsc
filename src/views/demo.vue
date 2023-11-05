@@ -6,7 +6,7 @@
 
 <script>
 import * as echarts from "echarts"
-import "echarts-gl"
+// import "echarts-gl"
 export default {
   data() {
     return {}

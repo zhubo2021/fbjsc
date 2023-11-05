@@ -10,14 +10,16 @@
     </div>
     <div class="center_map"></div>
     <Left />
+    <Right />
   </div>
 </template>
 <script>
 import dayjs from "dayjs"
 import Left from "./views/Left"
+import Right from "./views/Right"
 
 export default {
-  components: {Left},
+  components: { Left ,Right},
   data() {
     return {
       dayValue: "",
@@ -59,6 +61,7 @@ export default {
 
 <style lang="less">
 #app {
+  font-weight: 400;
   width: 100vw;
   overflow: hidden;
   height: 100vh;
@@ -105,7 +108,7 @@ export default {
     transform: translate(-50%, -50%);
     width: 626rem;
     height: 538rem;
-    background: url(~@/assets/fbjsc/map.png) no-repeat;
+    background: url(~@/assets/fbjsc/map.png) center/cover no-repeat;
   }
 }
 </style>
