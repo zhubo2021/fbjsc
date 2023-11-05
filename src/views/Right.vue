@@ -5,7 +5,22 @@
         <span class="title_label">各区域多发事故情况</span>
         <div class="sort_btns"></div>
       </div>
-      <div class="right_one_chart"></div>
+      <div class="pie_container">
+        <div class="right_one_chart"></div>
+        <div class="right_chart_legend">
+          <div class="legend_item" v-for="(item, i) in pieLegend" :key="i">
+            <div class="label">
+              <div class="pin" :style="{ background: item.color }"></div>
+              <span>{{ item.name }}</span>
+            </div>
+            <div class="num">
+              <span class="percent" :style="{ color: item.color }">{{ item.percent }}</span>
+              <span class="line" :style="{ background: item.color }"></span>
+              <span class="count">{{ item.count }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="right_two_container">
       <div class="top_title">
@@ -22,6 +37,10 @@
         <span class="title_label">工作量分布情况</span>
         <div class="sort_btns"></div>
       </div>
+      <div class="filter_bts">
+        <div :class="{ filter_item: true, filter_active: filterType == '1' }" @click="sortChange('filterType', '1')">违法核对总数：1427</div>
+        <div :class="{ filter_item: true, filter_active: filterType == '2' }" @click="sortChange('filterType', '2')">违法录入总数：759</div>
+      </div>
       <div class="right_three_chart"></div>
     </div>
   </div>
@@ -34,11 +53,273 @@ export default {
   data() {
     return {
       sortType: "1",
+      filterType: "1",
+      pieLegend: [
+        { name: "普陀区管委", percent: "20%", count: "123.54", color: "#00A2FF" },
+        { name: "普陀区", percent: "20%", count: "123.54", color: "#FC2626" },
+        { name: "新城区", percent: "20%", count: "123.54", color: "#14D23E" },
+        { name: "定海区", percent: "20%", count: "123.54", color: "#ED6701" },
+      ],
     }
   },
   methods: {
     sortChange(chartType, btnType) {
       this[chartType] = btnType
+    },
+    get3Dpie() {
+      if (!this._myChart3) {
+        this._myChart3 = echarts.init(document.querySelector(".right_one_chart"), null, { devicePixelRatio: 2 })
+      }
+      // 传入数据生成 option
+      let option = this.getPie3D(
+        [
+          {
+            name: "普陀区管委",
+            value: 15,
+            itemStyle: {
+              color: "rgba(0, 162, 255, 1)",
+            },
+          },
+          {
+            name: "普陀区",
+            value: 20,
+            itemStyle: {
+              color: "rgba(255, 71, 128, 1)",
+            },
+          },
+          {
+            name: "新城区",
+            value: 30,
+            itemStyle: {
+              color: "rgba(20, 210, 62, 1)",
+            },
+          },
+          {
+            name: "定海区",
+            value: 15,
+            itemStyle: {
+              color: "rgba(237, 103, 1, 1)",
+            },
+          },
+        ],
+        0.7, // 圆圈宽度
+      )
+      if (option) {
+        this._myChart3.setOption(option)
+      }
+    },
+    getParametricEquation(startRatio, endRatio, isSelected, isHovered, k, h) {
+      // 计算
+      let midRatio = (startRatio + endRatio) / 2
+
+      let startRadian = startRatio * Math.PI * 2
+      let endRadian = endRatio * Math.PI * 2
+      let midRadian = midRatio * Math.PI * 2
+
+      // 如果只有一个扇形，则不实现选中效果。
+      if (startRatio === 0 && endRatio === 1) {
+        isSelected = false
+      }
+
+      // 通过扇形内径/外径的值，换算出辅助参数 k（默认值 1/3）
+      k = typeof k !== "undefined" ? k : 1 / 3
+
+      // 计算选中效果分别在 x 轴、y 轴方向上的位移（未选中，则位移均为 0）
+      let offsetX = isSelected ? Math.cos(midRadian) * 0.1 : 0
+      let offsetY = isSelected ? Math.sin(midRadian) * 0.1 : 0
+
+      // 计算高亮效果的放大比例（未高亮，则比例为 1）
+      let hoverRate = isHovered ? 1.05 : 1
+
+      // 返回曲面参数方程
+      return {
+        u: {
+          min: -Math.PI,
+          max: Math.PI * 3,
+          step: Math.PI / 32,
+        },
+
+        v: {
+          min: 0,
+          max: Math.PI * 2,
+          step: Math.PI / 20,
+        },
+
+        x: function (u, v) {
+          if (u < startRadian) {
+            return offsetX + Math.cos(startRadian) * (1 + Math.cos(v) * k) * hoverRate
+          }
+          if (u > endRadian) {
+            return offsetX + Math.cos(endRadian) * (1 + Math.cos(v) * k) * hoverRate
+          }
+          return offsetX + Math.cos(u) * (1 + Math.cos(v) * k) * hoverRate
+        },
+
+        y: function (u, v) {
+          if (u < startRadian) {
+            return offsetY + Math.sin(startRadian) * (1 + Math.cos(v) * k) * hoverRate
+          }
+          if (u > endRadian) {
+            return offsetY + Math.sin(endRadian) * (1 + Math.cos(v) * k) * hoverRate
+          }
+          return offsetY + Math.sin(u) * (1 + Math.cos(v) * k) * hoverRate
+        },
+
+        z: function (u, v) {
+          if (u < -Math.PI * 0.5) {
+            return Math.sin(u)
+          }
+          if (u > Math.PI * 2.5) {
+            return Math.sin(u) * h * 0.1
+          }
+          return Math.sin(v) > 0 ? 1 * h * 0.1 : -1
+        },
+      }
+    },
+    // 生成模拟 3D 饼图的配置项
+    getPie3D(pieData, internalDiameterRatio) {
+      let series = []
+      let sumValue = 0
+      let startValue = 0
+      let endValue = 0
+      let legendData = []
+      let k = typeof internalDiameterRatio !== "undefined" ? (1 - internalDiameterRatio) / (1.5 + internalDiameterRatio) : 1 / 3 // 内径计算
+
+      // 为每一个饼图数据，生成一个 series-surface 配置
+      for (let i = 0; i < pieData.length; i++) {
+        sumValue += pieData[i].value
+
+        let seriesItem = {
+          name: pieData[i].name,
+          type: "surface",
+          parametric: true,
+          wireframe: {
+            show: false,
+          },
+          pieData: pieData[i],
+          pieStatus: {
+            selected: false,
+            hovered: false,
+            k: k,
+          },
+        }
+
+        if (typeof pieData[i].itemStyle != "undefined") {
+          let itemStyle = {}
+
+          typeof pieData[i].itemStyle.color != "undefined" ? (itemStyle.color = pieData[i].itemStyle.color) : null
+          typeof pieData[i].itemStyle.opacity != "undefined" ? (itemStyle.opacity = pieData[i].itemStyle.opacity) : null
+
+          seriesItem.itemStyle = itemStyle
+        }
+        series.push(seriesItem)
+      }
+
+      // 使用上一次遍历时，计算出的数据和 sumValue，调用 getParametricEquation 函数，
+      // 向每个 series-surface 传入不同的参数方程 series-surface.parametricEquation，也就是实现每一个扇形。
+      for (let i = 0; i < series.length; i++) {
+        endValue = startValue + series[i].pieData.value
+        series[i].pieData.startRatio = startValue / sumValue
+        series[i].pieData.endRatio = endValue / sumValue
+        series[i].parametricEquation = this.getParametricEquation(series[i].pieData.startRatio, series[i].pieData.endRatio, false, false, k, series[i].pieData.value)
+        startValue = endValue
+        legendData.push(series[i].name)
+      }
+
+      // 补充一个透明的圆环，用于支撑高亮功能的近似实现。
+      series.push({
+        name: "mouseoutSeries",
+        type: "surface",
+        parametric: true,
+        wireframe: {
+          show: false,
+        },
+        itemStyle: {
+          opacity: 0,
+        },
+        parametricEquation: {
+          u: {
+            min: 0,
+            max: Math.PI * 2,
+            step: Math.PI / 20,
+          },
+          v: {
+            min: 0,
+            max: Math.PI,
+            step: Math.PI / 20,
+          },
+          x: function (u, v) {
+            return Math.sin(v) * Math.sin(u) + Math.sin(u)
+          },
+          y: function (u, v) {
+            return Math.sin(v) * Math.cos(u) + Math.cos(u)
+          },
+          z: function (u, v) {
+            return Math.cos(v) > 0 ? 0.1 : -0.1
+          },
+        },
+      })
+
+      // 准备待返回的配置项，把准备好的 legendData、series 传入。
+      let option = {
+        animation: false,
+        tooltip: {
+          backgroundColor: "rgba(0,0,0,0.8)",
+          textStyle: {
+            color: "#fff",
+          },
+          formatter: params => {
+            if (params.seriesName !== "mouseoutSeries") {
+              return `${params.seriesName}<br/><span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${
+                params.color
+              };"></span>${option.series[params.seriesIndex].pieData.value}`
+            }
+          },
+        },
+        xAxis3D: {
+          min: -1,
+          max: 1,
+        },
+        yAxis3D: {
+          min: -1,
+          max: 1,
+        },
+        zAxis3D: {
+          min: -1,
+          max: 1,
+        },
+        grid3D: {
+          show: false,
+          boxHeight: 8,
+          // 控制饼图大小
+          boxDepth: 105,
+          boxWidth: 105,
+          viewControl: {
+            //3d效果可以放大、旋转等，请自己去查看官方配置
+            animation: false,
+            alpha: 25, // 上下倾斜角度
+            rotateSensitivity: [2, 0], // 旋转  0代表不转
+            zoomSensitivity: 0,
+            panSensitivity: 0,
+            distance: 120,
+            center: [0, -20, 0],
+          },
+          //后处理特效可以为画面添加高光、景深、环境光遮蔽（SSAO）、调色等效果。可以让整个画面更富有质感。
+          postEffect: {
+            //配置这项会出现锯齿，请自己去查看官方配置有办法解决
+            enable: true,
+            bloom: {
+              enable: true,
+              bloomIntensity: 0.1,
+            },
+            SSAO: {
+              enable: true,
+            },
+          },
+        },
+        series: series,
+      }
+      return option
     },
     getChart4() {
       const offsetX = 10 //bar宽
@@ -105,6 +386,8 @@ export default {
           axisPointer: {
             type: "shadow",
           },
+          borderRadius: 0,
+          padding: 0,
           formatter: function (params, ticket, callback) {
             const item = params[1]
             return item.name + " : " + item.value
@@ -211,7 +494,7 @@ export default {
                       yValue: api.value(1),
                       x: location[0],
                       y: location[1],
-                    xAxisPoint: api.coord([api.value(0), 0]),
+                      xAxisPoint: api.coord([api.value(0), 0]),
                     },
                     style: {
                       fill: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
@@ -283,11 +566,347 @@ export default {
       }
       this._myChart4.setOption(option)
     },
+    getChart5() {
+      let xaxisData = ["张三", "李四", "王五", "赵丽", "千奇", "昆八", "石九"]
+      let yaxisData = [90, 80, 100, 70, 65, 69, 80]
+      let yaxisData2 = Array(7)
+        .fill(0)
+        .map(() => parseInt(Math.random() * 100))
+      const offsetX = 8
+      const offsetY = 4
+      // 绘制左侧面
+      const CubeLeft = echarts.graphic.extendShape({
+        shape: {
+          x: 0,
+          y: 0,
+        },
+        buildPath: function (ctx, shape) {
+          // 会canvas的应该都能看得懂，shape是从custom传入的
+          const xAxisPoint = shape.xAxisPoint
+          const c0 = [shape.x, shape.y]
+          const c1 = [shape.x - offsetX, shape.y - offsetY]
+          const c2 = [xAxisPoint[0] - offsetX, xAxisPoint[1] - offsetY]
+          const c3 = [xAxisPoint[0], xAxisPoint[1]]
+          ctx.moveTo(c0[0], c0[1]).lineTo(c1[0], c1[1]).lineTo(c2[0], c2[1]).lineTo(c3[0], c3[1]).closePath()
+        },
+      })
+
+      // 绘制右侧面
+      const CubeRight = echarts.graphic.extendShape({
+        shape: {
+          x: 0,
+          y: 0,
+        },
+        buildPath: function (ctx, shape) {
+          const xAxisPoint = shape.xAxisPoint
+          const c1 = [shape.x, shape.y]
+          const c2 = [xAxisPoint[0], xAxisPoint[1]]
+          const c3 = [xAxisPoint[0] + offsetX, xAxisPoint[1] - offsetY]
+          const c4 = [shape.x + offsetX, shape.y - offsetY]
+          ctx.moveTo(c1[0], c1[1]).lineTo(c2[0], c2[1]).lineTo(c3[0], c3[1]).lineTo(c4[0], c4[1]).closePath()
+        },
+      })
+
+      // 绘制顶面
+      const CubeTop = echarts.graphic.extendShape({
+        shape: {
+          x: 0,
+          y: 0,
+        },
+        buildPath: function (ctx, shape) {
+          const c1 = [shape.x, shape.y]
+          const c2 = [shape.x + offsetX, shape.y - offsetY] //右点
+          const c3 = [shape.x, shape.y - offsetX]
+          const c4 = [shape.x - offsetX, shape.y - offsetY]
+          ctx.moveTo(c1[0], c1[1]).lineTo(c2[0], c2[1]).lineTo(c3[0], c3[1]).lineTo(c4[0], c4[1]).closePath()
+        },
+      })
+
+      // 注册三个面图形
+      echarts.graphic.registerShape("CubeLeft", CubeLeft)
+      echarts.graphic.registerShape("CubeRight", CubeRight)
+      echarts.graphic.registerShape("CubeTop", CubeTop)
+
+      let colorArr = [
+        ["rgba(0, 188, 188, 1)", "rgba(1, 169, 222, 0.2)"],
+        ["rgba(0, 208, 221, 1)", "rgba(0, 194, 255, 0.2)"],
+        ["rgba(0, 181, 221, 1)", "rgba(165, 255, 255, 1)"],
+
+        ["rgba(0, 147, 221, 1)", "rgba(0, 88, 255, 0.2)"],
+        ["rgba(0, 107, 188, 1)", "rgba(1, 56, 222, 0.2)"],
+        ["rgba(0, 114, 221, 1)", "rgba(129, 228, 255, 1)"],
+      ]
+
+      let option = {
+        backgroundColor: "black",
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            type: "shadow",
+          },
+          backgroundColor: "rgba(255,255,255,0.75)",
+          extraCssText: "box-shadow: 2px 2px 4px 0px rgba(0,0,0,0.3);",
+          textStyle: {
+            fontSize: 14,
+            color: "#000",
+          },
+          formatter: (params, ticket, callback) => {
+            const item = params[1]
+            return item.name + " : " + item.value + " 个"
+          },
+        },
+        grid: {
+          left: "0%",
+          right: "0",
+          top: "5%",
+          bottom: "0%",
+          containLabel: true,
+        },
+        xAxis: {
+          type: "category",
+          data: xaxisData,
+          axisLine: {
+            show: false,
+          },
+          axisTick: {
+            show: false,
+          },
+          axisLabel: {
+            fontSize: 14,
+            color: "#fff",
+          },
+        },
+        yAxis: {
+          type: "value",
+          minInterval: 1,
+          // y轴（竖直线）
+          axisLine: {
+            show: false,
+          },
+          // y轴横向 标线
+          splitLine: {
+            show: true,
+            lineStyle: {
+              color: "rgba(255,255,255,0.16)",
+            },
+          },
+          // y轴刻度线
+          axisTick: {
+            show: false,
+          },
+          // y轴文字
+          axisLabel: {
+            fontSize: 14,
+            color: "#fff",
+          },
+        },
+        series: [
+          {
+            type: "custom",
+            renderItem: (params, api) => {
+              const location = api.coord([api.value(0), api.value(1)])
+              const xAxisPoint = api.coord([api.value(0), 0])
+              const distance = 11
+              return {
+                type: "group",
+                children: [
+                  {
+                    type: "CubeLeft",
+                    shape: {
+                      api,
+                      xValue: api.value(0),
+                      yValue: api.value(1),
+                      x: location[0] - distance,
+                      y: location[1],
+                      xAxisPoint: [xAxisPoint[0] - distance, xAxisPoint[1]],
+                    },
+                    style: {
+                      fill: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        {
+                          offset: 0,
+                          color: colorArr[0][0],
+                        },
+                        {
+                          offset: 1,
+                          color: colorArr[0][1],
+                        },
+                      ]),
+                    },
+                  },
+                  {
+                    type: "CubeRight",
+                    shape: {
+                      api,
+                      xValue: api.value(0),
+                      yValue: api.value(1),
+                      x: location[0] - distance,
+                      y: location[1],
+                      xAxisPoint: [xAxisPoint[0] - distance, xAxisPoint[1]],
+                    },
+                    style: {
+                      fill: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        {
+                          offset: 0,
+                          color: colorArr[1][0],
+                        },
+                        {
+                          offset: 1,
+                          color: colorArr[1][1],
+                        },
+                      ]),
+                    },
+                  },
+                  {
+                    type: "CubeTop",
+                    shape: {
+                      api,
+                      xValue: api.value(0),
+                      yValue: api.value(1),
+                      x: location[0] - distance,
+                      y: location[1],
+                      xAxisPoint: [xAxisPoint[0] - distance, xAxisPoint[1]],
+                    },
+                    style: {
+                      fill: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        {
+                          offset: 0,
+                          color: colorArr[2][0],
+                        },
+                        {
+                          offset: 1,
+                          color: colorArr[2][1],
+                        },
+                      ]),
+                    },
+                  },
+                ],
+              }
+            },
+            data: yaxisData,
+          },
+          {
+            type: "custom",
+            renderItem: (params, api) => {
+              const location = api.coord([api.value(0), api.value(1)])
+              const xAxisPoint = api.coord([api.value(0), 0])
+              const distance = 11
+              return {
+                type: "group",
+                children: [
+                  {
+                    type: "CubeLeft",
+                    shape: {
+                      api,
+                      xValue: api.value(0),
+                      yValue: api.value(1),
+                      x: location[0] + distance,
+                      y: location[1],
+                      xAxisPoint: [xAxisPoint[0] + distance, xAxisPoint[1]],
+                    },
+                    style: {
+                      fill: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        {
+                          offset: 0,
+                          color: colorArr[3][0],
+                        },
+                        {
+                          offset: 1,
+                          color: colorArr[3][1],
+                        },
+                      ]),
+                    },
+                  },
+                  {
+                    type: "CubeRight",
+                    shape: {
+                      api,
+                      xValue: api.value(0),
+                      yValue: api.value(1),
+                      x: location[0] + distance,
+                      y: location[1],
+                      xAxisPoint: [xAxisPoint[0] + distance, xAxisPoint[1]],
+                    },
+                    style: {
+                      fill: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        {
+                          offset: 0,
+                          color: colorArr[4][0],
+                        },
+                        {
+                          offset: 1,
+                          color: colorArr[4][1],
+                        },
+                      ]),
+                    },
+                  },
+                  {
+                    type: "CubeTop",
+                    shape: {
+                      api,
+                      xValue: api.value(0),
+                      yValue: api.value(1),
+                      x: location[0] + distance,
+                      y: location[1],
+                      xAxisPoint: [xAxisPoint[0] + distance, xAxisPoint[1]],
+                    },
+                    style: {
+                      fill: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        {
+                          offset: 0,
+                          color: colorArr[5][0],
+                        },
+                        {
+                          offset: 1,
+                          color: colorArr[5][1],
+                        },
+                      ]),
+                    },
+                  },
+                ],
+              }
+            },
+            data: yaxisData2,
+          },
+
+          {
+            type: "bar",
+            itemStyle: {
+              color: "transparent",
+            },
+            data: yaxisData,
+          },
+          {
+            type: "bar",
+            itemStyle: {
+              color: "transparent",
+            },
+            data: yaxisData2,
+          },
+        ],
+      }
+      if (!this._myChart5) {
+        this._myChart5 = echarts.init(document.querySelector(".right_three_chart"))
+      }
+      this._myChart5.setOption(option)
+    },
   },
   created() {
     this.$nextTick(() => {
+      this.get3Dpie()
       this.getChart4()
+      this.getChart5()
     })
+  },
+  mounted() {
+    let change = () => {
+      if (this._myChart3) {
+        this._myChart3.resize()
+        this._myChart4.resize()
+        this._myChart5.resize()
+      }
+    }
+    change()
+    window.addEventListener("resize", change, false) // 固定写法
   },
 }
 </script>
@@ -298,6 +917,63 @@ export default {
   right: 44rem;
   top: 115rem;
   .right_one_container {
+    .pie_container {
+      height: 240rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      .right_one_chart {
+        width: 280rem;
+        height: 160rem;
+        // border: 1px solid #fff;
+        background: url(~@/assets/fbjsc/bottom3d.png) center 95% / contain no-repeat;
+      }
+      .right_chart_legend {
+        display: flex;
+        // align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        width: 160rem;
+        height: 100%;
+        .legend_item {
+          .label {
+            display: flex;
+            align-items: center;
+            color: #fff;
+            font-size: 14rem;
+            font-weight: 500;
+            .pin {
+              margin-right: 5rem;
+              width: 7rem;
+              height: 7rem;
+              border-radius: 7rem;
+              // background: #00a2ff;
+            }
+          }
+          .num {
+            display: flex;
+            align-items: center;
+            // justify-content: center;
+            .percent {
+              // color: #00a2ff;
+              font-size: 18rem;
+              font-weight: 400;
+            }
+            .line {
+              margin: 8rem;
+              // background: #00a2ff;
+              width: 2rem;
+              height: 14rem;
+            }
+            .count {
+              color: #c0c0c5;
+              font-size: 18rem;
+              font-weight: 400;
+            }
+          }
+        }
+      }
+    }
   }
   .right_two_container {
     .right_two_chart {
@@ -309,10 +985,33 @@ export default {
     }
   }
   .right_three_container {
+    .filter_bts {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20rem 10rem;
+      gap: 15rem;
+      .filter_item {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 200rem;
+        height: 40rem;
+        color: #00a3ff;
+        font-size: 16rem;
+        font-weight: 500;
+        background: url(~@/assets/fbjsc/part6_tab_nor.png) center/cover no-repeat;
+      }
+      .filter_active {
+        color: #fff;
+        background: url(~@/assets/fbjsc/part6_tab_sel.png) center/cover no-repeat;
+      }
+    }
     .right_three_chart {
       margin-top: 20rem;
       margin-bottom: 20rem;
-      border: 1px solid #fff;
+      // border: 1px solid #fff;
       width: 440rem;
       height: 200rem;
     }

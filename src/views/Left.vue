@@ -20,6 +20,23 @@
           <div class="num">{{ item.num }}</div>
           <div class="name">{{ item.name }}</div>
           <div class="plateId">{{ item.plateId }}</div>
+          <div class="dialog_point">
+            <div class="dialog_title">
+              <span>浙LDA2778</span>
+              <span class="pages">
+                <div class="page_item" :style="{ background: '#FDE701' }"></div>
+                <div class="page_item"></div>
+                <div class="page_item"></div>
+                <div class="page_item"></div>
+              </span>
+            </div>
+            <div class="dialog_content">
+              <div class="content_item">事故地址：事故地址信息</div>
+              <div class="content_item">事故时间：2023-11-01 12:22:30</div>
+              <div class="content_item">事故当事人：王先生</div>
+              <div class="content_item">事故责任车辆信息：浙LDA2778</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -34,23 +51,32 @@
       <div class="select_tabs">
         <div :class="{ tab_item: true, tab_sel: selectThree == '1' }" @click="sortChange('selectThree', '1')">
           <span class="label">全部</span>
-          <span class="num">3213</span>
+          <!-- <span class="num">3213</span> -->
+          <animate-number mode="manual" class="num" ref="myNum1" from="0" to="0" :formatter="formatter" duration="3000" easing="easeOutQuad" />
         </div>
         <div :class="{ tab_item: true, tab_sel: selectThree == '2' }" @click="sortChange('selectThree', '2')">
           <span class="label">定海</span>
-          <span class="num">3213</span>
+          <animate-number mode="manual" class="num" ref="myNum2" from="0" to="0" :formatter="formatter" duration="3000" easing="easeOutQuad" />
+
+          <!-- <span class="num">3213</span> -->
         </div>
         <div :class="{ tab_item: true, tab_sel: selectThree == '3' }" @click="sortChange('selectThree', '3')">
           <span class="label">普陀</span>
-          <span class="num">3213</span>
+          <animate-number mode="manual" class="num" ref="myNum3" from="0" to="0" :formatter="formatter" duration="3000" easing="easeOutQuad" />
+
+          <!-- <span class="num">3213</span> -->
         </div>
         <div :class="{ tab_item: true, tab_sel: selectThree == '4' }" @click="sortChange('selectThree', '4')">
           <span class="label">普陀山</span>
-          <span class="num">3213</span>
+          <animate-number mode="manual" class="num" ref="myNum4" from="0" to="0" :formatter="formatter" duration="3000" easing="easeOutQuad" />
+
+          <!-- <span class="num">3213</span> -->
         </div>
         <div :class="{ tab_item: true, tab_sel: selectThree == '5' }" @click="sortChange('selectThree', '5')">
           <span class="label">新城</span>
-          <span class="num">3213</span>
+          <animate-number mode="manual" class="num" ref="myNum5" from="0" to="0" :formatter="formatter" duration="3000" easing="easeOutQuad" />
+
+          <!-- <span class="num">3213</span> -->
         </div>
       </div>
       <div class="left_three_chart"></div>
@@ -83,6 +109,15 @@ export default {
   methods: {
     sortChange(chartType, btnType) {
       this[chartType] = btnType
+    },
+    formatter(n = 0) {
+      const regex = /\d{1,3}(?=(\d{3})+(\.|$))/g // 替换规则
+      n = String(Math.round(n * Math.pow(10, 2))) // 乘100 四舍五入
+      let integer = n.substr(0, n.length - 2).replace(regex, "$&,") // 最后两位前的为整数
+      // let decimal = n.substr(n.length - 2) // 最后两位为小数
+      const result = `${integer || 0}`
+      // const result = `${integer || 0}.${decimal}`
+      return result
     },
     getChart1() {
       const offsetX = 10 //bar宽
@@ -137,6 +172,7 @@ export default {
       echarts.graphic.registerShape("CubeTop", CubeTop)
       let xAxisData = ["定海大道A口", "定海大道B口", "定海大道C口", "定海大道D口", "定海大道E口", "定海大道F口", "定海大道G口", "定海大道H口", "定海大道I口", "定海大道J口"]
       let seriesData = [20, 45, 80, 46, 57, 94, 54, 35, 66, 14]
+      let seriesData2 = [202, 425, 80, 46, 57, 94, 54, 35, 66, 14]
       // 蓝色渐变
       let colorArr = [
         ["rgba(0, 114, 221, 1)", "rgba(129, 228, 255, 1)"],
@@ -149,9 +185,75 @@ export default {
           axisPointer: {
             type: "shadow",
           },
+          borderWidth: 0,
+          borderRadius: 0,
+          padding: 0,
+          position: ["100%", "0%"],
           formatter: function (params, ticket, callback) {
-            const item = params[1]
-            return item.name + " : " + item.value
+            console.log("params", params)
+            const item = params[0]
+            let bg = require("@/assets/fbjsc/tankuang_head.png")
+            let dom = `
+            <div 
+              style="
+              background: url(${bg}) top center/contain no-repeat, #000;
+              width: 339rem;
+              border-bottom: 2rem solid #00a2ff;">
+              <div
+                style="display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding-left: 25rem;
+                padding-right: 10rem;
+                height: 49rem;
+                color: #fff;
+                font-size: 18rem;
+                font-weight: 600;"
+              >
+                <span>${item.name}</span>
+                <span style="">
+                  ${item.value}%
+                </span>
+              </div>
+              <div 
+                style="padding: 10rem;
+                gap: 5rem;
+                display: flex;
+                color: #fff;
+                flex-direction: column;"
+              >
+                <div
+                  style="display: flex;
+                  align-items: center;
+                  background: rgba(0, 170, 255, 0.3);
+                  height: 32rem;
+                  font-size: 16rem;
+                  font-weight: 400;
+                  padding-left: 10rem;">
+                采集数量：123123213</div>
+                <div 
+                  style="display: flex;
+                  align-items: center;
+                  background: rgba(0, 170, 255, 0.3);
+                  height: 32rem;
+                  font-size: 16rem;
+                  font-weight: 400;
+                  padding-left: 10rem;">
+                  正式违法数量：123123123</div>
+              </div>
+            </div>
+            `
+
+            /* dom = `
+             <div
+             style="
+              background: url(${bg}) top center/contain no-repeat, rgba(8, 12, 23, 0.78);width: 339rem;border-bottom: 2rem solid #00a2ff;
+             ">
+              ${item.name}
+              </div>
+            ` */
+            // return item.name + " : " + item.value
+            return dom
           },
         },
         grid: {
@@ -255,7 +357,7 @@ export default {
                       yValue: api.value(1),
                       x: location[0],
                       y: location[1],
-                    xAxisPoint: api.coord([api.value(0), 0]),
+                      xAxisPoint: api.coord([api.value(0), 0]),
                     },
                     style: {
                       fill: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
@@ -301,22 +403,9 @@ export default {
           },
           {
             type: "bar",
-            label: {
-              /* normal: {
-                show: true,
-                position: "top",
-                formatter: e => {
-                  return e.value
-                },
-                fontSize: 16,
-                color: "#43C4F1",
-                offset: [0, -5],
-              }, */
-            },
             itemStyle: {
               color: "transparent",
             },
-            tooltip: {},
             data: seriesData,
           },
         ],
@@ -576,7 +665,21 @@ export default {
     this.$nextTick(() => {
       this.getChart1()
       this.getChart2()
+      ;["123", "523", "1233", "123", "1223"].forEach((e, i) => {
+        this.$refs["myNum" + (i + 1)].reset("0", e)
+        this.$refs["myNum" + (i + 1)].start()
+      })
     })
+  },
+  mounted() {
+    let change = () => {
+      if (this._myChart1) {
+        this._myChart1.resize()
+        this._myChart2.resize()
+      }
+    }
+    change()
+    window.addEventListener("resize", change, false) // 固定写法
   },
 }
 </script>
@@ -607,12 +710,14 @@ export default {
       grid-row-gap: 20rem;
       grid-column-gap: 12rem;
       .car_item {
+        cursor: pointer;
+        position: relative;
         // width: 140rem;
         height: 58rem;
         background: url(~@/assets/fbjsc/part_bg.png) center/cover no-repeat;
         display: grid;
         grid-template-columns: 39rem 1fr;
-        grid-template-rows: 1fr 1fr;
+        grid-template-rows: 30rem 30rem;
         // grid-row-gap: 16px;
         // grid-column-gap: 13px;
         .num {
@@ -637,6 +742,11 @@ export default {
           text-align: left;
           margin-top: 3rem;
           margin-left: 8rem;
+        }
+        &:hover {
+          .dialog_point {
+            display: block;
+          }
         }
       }
       .car_item:nth-child(-n + 3) {
@@ -679,6 +789,65 @@ export default {
       width: 440rem;
       height: 200rem;
       // border: 1px solid #fff;
+    }
+  }
+  .dialog_point {
+    display: none;
+    position: relative;
+    top: -10rem;
+    left: 10rem;
+    background: url(~@/assets/fbjsc/tankuang_head.png) top center/contain no-repeat, rgba(8, 12, 23, 0.78);
+    width: 339rem;
+    border-bottom: 2rem solid #00a2ff;
+    z-index: 10;
+    .dialog_title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-left: 25rem;
+      padding-right: 10rem;
+      height: 49rem;
+      font-size: 18rem;
+      font-weight: 600;
+      .status {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        .point {
+          margin-right: 10rem;
+          display: inline-block;
+          // background: #14D23E;
+          width: 7rem;
+          height: 7rem;
+          border-radius: 7rem;
+        }
+      }
+      .pages {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6rem;
+        .page_item {
+          background: #0091ff;
+          width: 9rem;
+          height: 9rem;
+        }
+      }
+    }
+    .dialog_content {
+      padding: 10rem;
+      gap: 5rem;
+      display: flex;
+      flex-direction: column;
+      .content_item {
+        display: flex;
+        align-items: center;
+        background: rgba(0, 170, 255, 0.15);
+        height: 32rem;
+        font-size: 16rem;
+        font-weight: 400;
+        padding-left: 10rem;
+      }
     }
   }
 }
