@@ -154,10 +154,8 @@ export default {
   color: #fff;
   position: relative;
   font-size: 16rem;
-  // background: url(~@/assets/fbjsc/Header.png) top/contain no-repeat, url(~@/assets/fbjsc/Footers.png) bottom/contain no-repeat,
-  //   url(~@/assets/fbjsc/bg.png) 40% 9% / 1600rem 856rem no-repeat, #000;
   background: url(~@/assets/fbjsc/Header.png) center 30rem / contain no-repeat, url(~@/assets/fbjsc/Footers.png) bottom/contain no-repeat,
-    url(~@/assets/fbjsc/Lift.png) left/contain no-repeat, url(~@/assets/fbjsc/Right.png) right/contain no-repeat, url(~@/assets/fbjsc/bg.png) 51% 55%/ 660rem 600rem no-repeat #000;
+    url(~@/assets/fbjsc/Lift.png) left/contain no-repeat, url(~@/assets/fbjsc/Right.png) right/contain no-repeat, url(~@/assets/fbjsc/bg.png) center/cover no-repeat, #000;
 
   .head_bar {
     display: flex;
@@ -194,7 +192,7 @@ export default {
     transform: translate(-50%, -50%);
     width: 626rem;
     height: 538rem;
-    background: url(~@/assets/fbjsc/map.png) center/cover no-repeat;
+    // background: url(~@/assets/fbjsc/map.png) center/cover no-repeat;
     .map_point1 {
       position: absolute;
       left: 30%;
