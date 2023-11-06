@@ -25,7 +25,7 @@ export default {
     return {
       kanbanList: [
         {
-          name: "审查数",
+          name: "审验数",
           num: "73712",
           lastWeek: 10,
           lastDay: -10,

@@ -674,12 +674,13 @@ export default {
   mounted() {
     let change = () => {
       if (this._myChart1) {
-        this._myChart1.resize()
-        this._myChart2.resize()
+        setTimeout(() => {
+          this._myChart1.resize()
+          this._myChart2.resize()
+        }, 200)
       }
     }
-    change()
-    window.addEventListener("resize", change, false) // 固定写法
+    window.addEventListener("resize", change) // 固定写法
   },
 }
 </script>
@@ -716,8 +717,8 @@ export default {
         height: 58rem;
         background: url(~@/assets/fbjsc/part_bg.png) center/cover no-repeat;
         display: grid;
-        grid-template-columns: 39rem 1fr;
-        grid-template-rows: 30rem 30rem;
+        grid-template-columns: 38rem 1fr;
+        grid-template-rows: 29rem 30rem;
         // grid-row-gap: 16px;
         // grid-column-gap: 13px;
         .num {

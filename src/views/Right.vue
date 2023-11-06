@@ -900,13 +900,14 @@ export default {
   mounted() {
     let change = () => {
       if (this._myChart3) {
-        this._myChart3.resize()
-        this._myChart4.resize()
-        this._myChart5.resize()
+        setTimeout(() => {
+          this._myChart3.resize()
+          this._myChart4.resize()
+          this._myChart5.resize()
+        }, 200)
       }
     }
-    change()
-    window.addEventListener("resize", change, false) // 固定写法
+    window.addEventListener("resize", change) // 固定写法
   },
 }
 </script>
