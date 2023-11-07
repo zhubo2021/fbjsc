@@ -43,7 +43,7 @@ export default {
           lastDay: -10,
         },
         {
-          name: "录入数",
+          name: "录入率",
           num: "73712",
           lastWeek: 10,
           lastDay: -10,

@@ -8,7 +8,7 @@
       <div class="pie_container">
         <div class="right_one_chart"></div>
         <div class="right_chart_legend">
-          <div class="legend_item" v-for="(item, i) in pieLegend" :key="i">
+          <div class="legend_item" v-for="(item, i) in threeDdata" :key="i">
             <div class="label">
               <div class="pin" :style="{ background: item.color }"></div>
               <span>{{ item.name }}</span>
@@ -38,8 +38,8 @@
         <div class="sort_btns"></div>
       </div>
       <div class="filter_bts">
-        <div :class="{ filter_item: true, filter_active: filterType == '1' }" @click="sortChange('filterType', '1')">违法核对总数：1427</div>
-        <div :class="{ filter_item: true, filter_active: filterType == '2' }" @click="sortChange('filterType', '2')">违法录入总数：759</div>
+        <div class="filter_item filter_active">违法核对总数：{{ threeChartNum[0] }}</div>
+        <div class="filter_item">违法录入总数：{{ threeChartNum[1] }}</div>
       </div>
       <div class="right_three_chart"></div>
     </div>
@@ -48,60 +48,60 @@
 
 <script>
 import * as echarts from "echarts"
+import axios from "@/axios.js"
+let apiUrl = "https://cube.yucekj.com/api/cubeMockApi/getContent?bizCode="
+if (process.env.NODE_ENV == "production") {
+  apiUrl = "/api/cubeMockApi/getContent?bizCode="
+}
 
 export default {
   data() {
     return {
       sortType: "1",
-      filterType: "1",
-      pieLegend: [
-        { name: "普陀区管委", percent: "20%", count: "123.54", color: "#00A2FF" },
+      // filterType: "1",
+      threeChartNum: [],
+      threeDdata: [
+        /*  { name: "普陀区管委", percent: "20%", count: "123.54", color: "#00A2FF" },
         { name: "普陀区", percent: "20%", count: "123.54", color: "#FC2626" },
         { name: "新城区", percent: "20%", count: "123.54", color: "#14D23E" },
-        { name: "定海区", percent: "20%", count: "123.54", color: "#ED6701" },
+        { name: "定海区", percent: "20%", count: "123.54", color: "#ED6701" }, */
       ],
     }
   },
   methods: {
+    axiosRquest(path) {
+      return axios.get(apiUrl + path)
+    },
     sortChange(chartType, btnType) {
       this[chartType] = btnType
+      if (chartType == "sortType") {
+        this.getChart4()
+      }
     },
-    get3Dpie() {
+    async get3Dpie() {
+      let res = await this.axiosRquest("zs_acd_many_area_time_ol")
+      console.log("get3Dpie", res)
+
+      let colorList = ["rgba(0, 162, 255, 1)", "rgba(255, 71, 128, 1)", "rgba(20, 210, 62, 1)", "rgba(237, 103, 1, 1)", "rgba(253, 231, 1, 1)"]
+      let data = res.map((e, i) => {
+        return {
+          name: e.xzqh,
+          value: e.sgzb * 100,
+          itemStyle: {
+            color: colorList[i],
+          },
+          _value: e.sgzs,
+        }
+      })
+      this.threeDdata = data.map(e => {
+        return { name: e.name, percent: e.value + "%", count: e._value, color: e.itemStyle.color }
+      })
       if (!this._myChart3) {
         this._myChart3 = echarts.init(document.querySelector(".right_one_chart"), null, { devicePixelRatio: 2 })
       }
       // 传入数据生成 option
       let option = this.getPie3D(
-        [
-          {
-            name: "普陀区管委",
-            value: 15,
-            itemStyle: {
-              color: "rgba(0, 162, 255, 1)",
-            },
-          },
-          {
-            name: "普陀区",
-            value: 20,
-            itemStyle: {
-              color: "rgba(255, 71, 128, 1)",
-            },
-          },
-          {
-            name: "新城区",
-            value: 30,
-            itemStyle: {
-              color: "rgba(20, 210, 62, 1)",
-            },
-          },
-          {
-            name: "定海区",
-            value: 15,
-            itemStyle: {
-              color: "rgba(237, 103, 1, 1)",
-            },
-          },
-        ],
+        data,
         0.7, // 圆圈宽度
       )
       if (option) {
@@ -272,7 +272,7 @@ export default {
             if (params.seriesName !== "mouseoutSeries") {
               return `${params.seriesName}<br/><span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${
                 params.color
-              };"></span>${option.series[params.seriesIndex].pieData.value}`
+              };"></span>${option.series[params.seriesIndex].pieData.value}% | ${option.series[params.seriesIndex].pieData._value}`
             }
           },
         },
@@ -321,7 +321,15 @@ export default {
       }
       return option
     },
-    getChart4() {
+    async getChart4() {
+      let path
+      if (this.sortType == "1") {
+        path = "zs_vio_equip_colletct_asc_ol"
+      } else {
+        path = "zs_vio_equip_colletct_desc_ol"
+      }
+      let res = await this.axiosRquest(path)
+      console.log("getChart4", res)
       const offsetX = 10 //bar宽
       const offsetY = 5 // 顶部菱形倾斜角度 (bar宽度的一半)
       // 绘制左侧面
@@ -566,7 +574,12 @@ export default {
       }
       this._myChart4.setOption(option)
     },
-    getChart5() {
+    async getChart5() {
+      let res = await this.axiosRquest("zs_vio_handle_time_ol")
+      let res2 = await this.axiosRquest("zs_vio_handle_total_ol")
+      this.threeChartNum = [res2.lrzs, res2.hdzs]
+      console.log("getChart5", res, res2)
+
       let xaxisData = ["张三", "李四", "王五", "赵丽", "千奇", "昆八", "石九"]
       let yaxisData = [90, 80, 100, 70, 65, 69, 80]
       let yaxisData2 = Array(7)
@@ -919,7 +932,7 @@ export default {
   top: 115rem;
   .right_one_container {
     .pie_container {
-      height: 240rem;
+      height: 250rem;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -993,7 +1006,7 @@ export default {
       margin: 20rem 10rem;
       gap: 15rem;
       .filter_item {
-        cursor: pointer;
+        // cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;

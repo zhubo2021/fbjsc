@@ -155,7 +155,7 @@ export default {
   position: relative;
   font-size: 16rem;
   background: url(~@/assets/fbjsc/Header.png) center 30rem / contain no-repeat, url(~@/assets/fbjsc/Footers.png) bottom/contain no-repeat,
-    url(~@/assets/fbjsc/Lift.png) left/contain no-repeat, url(~@/assets/fbjsc/Right.png) right/contain no-repeat, url(~@/assets/fbjsc/bg.png) center/cover no-repeat, #000;
+    url(~@/assets/fbjsc/bg.png) center/cover no-repeat, #000;
 
   .head_bar {
     display: flex;
@@ -172,6 +172,7 @@ export default {
       font-size: 44rem;
       color: #bde6ff;
       padding-right: 206rem;
+      padding-top: 20rem;
     }
     .search_btn {
       width: 168rem;

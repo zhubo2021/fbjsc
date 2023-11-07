@@ -86,6 +86,11 @@
 
 <script>
 import * as echarts from "echarts"
+import axios from "@/axios.js"
+let apiUrl = "https://cube.yucekj.com/api/cubeMockApi/getContent?bizCode="
+if (process.env.NODE_ENV == "production") {
+  apiUrl = "/api/cubeMockApi/getContent?bizCode="
+}
 
 export default {
   data() {
@@ -107,8 +112,14 @@ export default {
     }
   },
   methods: {
+    axiosRquest(path) {
+      return axios.get(apiUrl + path)
+    },
     sortChange(chartType, btnType) {
       this[chartType] = btnType
+      if (chartType == "sortOne") {
+        this.getChart1()
+      }
     },
     formatter(n = 0) {
       const regex = /\d{1,3}(?=(\d{3})+(\.|$))/g // 替换规则
@@ -119,7 +130,17 @@ export default {
       // const result = `${integer || 0}.${decimal}`
       return result
     },
-    getChart1() {
+    async getChart1() {
+      let path
+      if (this.sortOne == "1") {
+        path = "zs_vio_equip_use_rate_desc_ol"
+      } else {
+        path = "zs_vio_equip_use_rate_asc_ol"
+      }
+      let res = await this.axiosRquest(path)
+      res = res.sort((a, b) => a.rk - b.rk)
+      // console.log("getChart1", res)
+
       const offsetX = 10 //bar宽
       const offsetY = 5 // 顶部菱形倾斜角度 (bar宽度的一半)
       // 绘制左侧面
@@ -170,9 +191,13 @@ export default {
       echarts.graphic.registerShape("CubeLeft", CubeLeft)
       echarts.graphic.registerShape("CubeRight", CubeRight)
       echarts.graphic.registerShape("CubeTop", CubeTop)
-      let xAxisData = ["定海大道A口", "定海大道B口", "定海大道C口", "定海大道D口", "定海大道E口", "定海大道F口", "定海大道G口", "定海大道H口", "定海大道I口", "定海大道J口"]
-      let seriesData = [20, 45, 80, 46, 57, 94, 54, 35, 66, 14]
-      let seriesData2 = [202, 425, 80, 46, 57, 94, 54, 35, 66, 14]
+
+      // let xAxisData = ["定海大道A口", "定海大道B口", "定海大道C口", "定海大道D口", "定海大道E口", "定海大道F口", "定海大道G口", "定海大道H口", "定海大道I口", "定海大道J口"]
+      let xAxisData = res.map(e => e.sbmc)
+      let seriesData1 = res.map(e => e.cjs)
+      let seriesData2 = res.map(e => e.lrs)
+      let seriesData3 = res.map(e => e.cjl * 100)
+
       // 蓝色渐变
       let colorArr = [
         ["rgba(0, 114, 221, 1)", "rgba(129, 228, 255, 1)"],
@@ -190,11 +215,11 @@ export default {
           padding: 0,
           position: ["100%", "0%"],
           formatter: function (params, ticket, callback) {
-            console.log("params", params)
+            // console.log("params", params)
             const item = params[0]
             let bg = require("@/assets/fbjsc/tankuang_head.png")
             let dom = `
-            <div 
+            <div
               style="
               background: url(${bg}) top center/contain no-repeat, #000;
               width: 339rem;
@@ -215,7 +240,7 @@ export default {
                   ${item.value}%
                 </span>
               </div>
-              <div 
+              <div
                 style="padding: 10rem;
                 gap: 5rem;
                 display: flex;
@@ -230,8 +255,8 @@ export default {
                   font-size: 16rem;
                   font-weight: 400;
                   padding-left: 10rem;">
-                采集数量：123123213</div>
-                <div 
+                采集数量：${params[1].value}</div>
+                <div
                   style="display: flex;
                   align-items: center;
                   background: rgba(0, 170, 255, 0.3);
@@ -239,7 +264,7 @@ export default {
                   font-size: 16rem;
                   font-weight: 400;
                   padding-left: 10rem;">
-                  正式违法数量：123123123</div>
+                  正式违法数量：${params[2].value}</div>
               </div>
             </div>
             `
@@ -275,9 +300,9 @@ export default {
           axisLabel: {
             fontSize: 12,
             interval: 0,
-            color: "rgba(255, 255, 255, 0.6)",
+            color: "#fff",
             // 使用函数模板，函数参数分别为刻度数值（类目），刻度的索引
-            /* formatter: function (value) {
+            formatter: function (value) {
               const length = value.length
               if (length > 3) {
                 const start = Math.floor(length / 2)
@@ -285,13 +310,14 @@ export default {
                 return str
               }
               return value
-            }, */
+            },
             rotate: 45,
           },
         },
         yAxis: {
           type: "value",
           minInterval: 1,
+          max: 100,
           // y轴（竖直线）
           axisLine: {
             show: false,
@@ -399,14 +425,21 @@ export default {
                 ],
               }
             },
-            data: seriesData,
+            data: seriesData3,
           },
           {
             type: "bar",
             itemStyle: {
               color: "transparent",
             },
-            data: seriesData,
+            data: seriesData1,
+          },
+          {
+            type: "bar",
+            itemStyle: {
+              color: "transparent",
+            },
+            data: seriesData2,
           },
         ],
       }
