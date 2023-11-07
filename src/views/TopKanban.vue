@@ -121,7 +121,7 @@ export default {
   top: 140rem;
   left: 50%;
   transform: translateX(-50%);
-  width: 800rem;
+  width: 36%;
   // height: 130rem;
   display: flex;
   align-items: center;
