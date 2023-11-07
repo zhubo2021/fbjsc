@@ -16,25 +16,29 @@
         <div class="sort_btns"></div>
       </div>
       <div class="get_out_car">
-        <div class="car_item" v-for="(item, i) in carList" :key="i">
+        <div class="car_item" @mouseenter="cardChange(item.children[0])" v-for="(item, i) in carList" :key="i">
           <div class="num">{{ item.num }}</div>
           <div class="name">{{ item.name }}</div>
           <div class="plateId">{{ item.plateId }}</div>
           <div class="dialog_point">
             <div class="dialog_title">
-              <span>浙LDA2778</span>
+              <span>{{ item.plateId }}</span>
               <span class="pages">
-                <div class="page_item" :style="{ background: '#FDE701' }"></div>
-                <div class="page_item"></div>
-                <div class="page_item"></div>
-                <div class="page_item"></div>
+                <div
+                  class="page_item"
+                  :style="{ background: child.in_rk == currentCard.in_rk ? '#FDE701' : '#0091ff' }"
+                  v-for="child in item.children"
+                  :key="child.in_rk"
+                  @click="cardChange(child)"
+                ></div>
               </span>
             </div>
             <div class="dialog_content">
-              <div class="content_item">事故地址：事故地址信息</div>
-              <div class="content_item">事故时间：2023-11-01 12:22:30</div>
-              <div class="content_item">事故当事人：王先生</div>
-              <div class="content_item">事故责任车辆信息：浙LDA2778</div>
+              <div class="content_item">所有人：{{ currentCard.belong }}</div>
+              <div class="content_item">电话：{{ currentCard.phone }}</div>
+              <div class="content_item">违法行为：{{ currentCard.against }}</div>
+              <div class="content_item">违法地点：{{ currentCard.addr }}</div>
+              <div class="content_item">违法时间：{{ currentCard.time }}</div>
             </div>
           </div>
         </div>
@@ -75,8 +79,6 @@
         <div :class="{ tab_item: true, tab_sel: selectThree == '5' }" @click="sortChange('selectThree', '5')">
           <span class="label">新城</span>
           <animate-number mode="manual" class="num" ref="myNum5" from="0" to="0" :formatter="formatter" duration="3000" easing="easeOutQuad" />
-
-          <!-- <span class="num">3213</span> -->
         </div>
       </div>
       <div class="left_three_chart"></div>
@@ -98,8 +100,9 @@ export default {
       sortOne: "1",
       sortThree: "1",
       selectThree: "1",
+      currentCard: {},
       carList: [
-        { num: 8, name: "小型新能源汽车", plateId: "浙LDA2778" },
+        /* { num: 8, name: "小型新能源汽车", plateId: "浙LDA2778" },
         { num: 11, name: "小型新能源汽车", plateId: "浙LDA2778" },
         { num: 4, name: "小型新能源汽车", plateId: "浙LDA2778" },
         { num: 4, name: "小型新能源汽车", plateId: "浙LDA2778" },
@@ -107,7 +110,7 @@ export default {
         { num: 4, name: "小型新能源汽车", plateId: "浙LDA2778" },
         { num: 4, name: "小型新能源汽车", plateId: "浙LDA2778" },
         { num: 4, name: "小型新能源汽车", plateId: "浙LDA2778" },
-        { num: 4, name: "小型新能源汽车", plateId: "浙LDA2778" },
+        { num: 4, name: "小型新能源汽车", plateId: "浙LDA2778" }, */
       ],
     }
   },
@@ -129,6 +132,49 @@ export default {
       const result = `${integer || 0}`
       // const result = `${integer || 0}.${decimal}`
       return result
+    },
+    cardChange(v) {
+      console.log(v)
+      this.currentCard = v
+    },
+    async getCarData() {
+      let res = await this.axiosRquest("zs_vio_vehicle_many_time_ol")
+      // console.log("getCarData", res)
+      let arr = new Map()
+      for (let index = 0; index < res.length; index++) {
+        const element = res[index]
+
+        let obj = {
+          out_rk: element.out_rk,
+          num: element.wfcs,
+          name: element.hpzlmc,
+          plateId: element.hphm,
+          children: [
+            {
+              in_rk: element.in_rk,
+              belong: element.syr,
+              phone: element.lxdh,
+              against: element.wfxw,
+              addr: element.wfdd,
+              time: element.wfsj,
+            },
+          ],
+        }
+        if (arr.has(element.out_rk)) {
+          obj = arr.get(element.out_rk)
+          obj.children.push({
+            in_rk: element.in_rk,
+            belong: element.syr,
+            phone: element.lxdh,
+            against: element.wfxw,
+            addr: element.wfdd,
+            time: element.wfsj,
+          })
+        }
+        arr.set(element.out_rk, obj)
+      }
+      this.carList = Array.from(arr.values())
+      // console.log(arr, this.carList)
     },
     async getChart1() {
       let path
@@ -449,7 +495,10 @@ export default {
       }
       this._myChart1.setOption(option)
     },
-    getChart2() {
+    async getChart2() {
+      let res = await this.axiosRquest("zs_vio_area_many_time_ol")
+      console.log("getChart2", res)
+
       const offsetX = 10 //bar宽
       const offsetY = 5 // 顶部菱形倾斜角度 (bar宽度的一半)
       // 绘制左侧面
@@ -703,6 +752,7 @@ export default {
         this.$refs["myNum" + (i + 1)].start()
       })
     })
+    this.getCarData()
   },
   mounted() {
     let change = () => {
@@ -880,7 +930,8 @@ export default {
         height: 32rem;
         font-size: 16rem;
         font-weight: 400;
-        padding-left: 10rem;
+        margin-left: 90rem;
+        text-indent: -80rem;
       }
     }
   }

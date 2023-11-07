@@ -4,7 +4,7 @@
       <div class="card_kanban">
         <div class="card_img"></div>
         <div class="card_name">{{ item.name }}</div>
-        <animate-number mode="manual" class="card_num" :ref="'myNum' + i" from="0" to="0" :formatter="formatter" duration="3000" easing="easeOutQuad" />
+        <animate-number mode="manual" class="card_num" :ref="'myNum' + i" from="0" to="0" :formatter="n => formatter(n, item.name)" duration="3000" easing="easeOutQuad" />
       </div>
 
       <div class="percent_num">
@@ -21,10 +21,11 @@
 
 <script>
 export default {
+  props: ["dataList"],
   data() {
     return {
       kanbanList: [
-        {
+        /* {
           name: "设备总数",
           num: "73712",
           lastWeek: 10,
@@ -47,29 +48,70 @@ export default {
           num: "73712",
           lastWeek: 10,
           lastDay: -10,
-        },
+        }, */
       ],
     }
   },
+  watch: {
+    dataList: {
+      handler(newVal) {
+        if (newVal.length > 0) {
+          this.kanbanList = [
+            {
+              name: "设备总数",
+              num: newVal.find(e => e.tag == 1).cnt,
+              lastWeek: parseInt(newVal.find(e => e.tag == 1).rhb * 100),
+              lastDay: parseInt(newVal.find(e => e.tag == 1).ztb * 100),
+            },
+            {
+              name: "运行设备数",
+              num: newVal.find(e => e.tag == 2).cnt,
+              lastWeek: parseInt(newVal.find(e => e.tag == 2).rhb * 100),
+              lastDay: parseInt(newVal.find(e => e.tag == 2).ztb * 100),
+            },
+            {
+              name: "设备完好率",
+              num: parseInt(newVal.find(e => e.tag == 3).cnt * 100),
+              lastWeek: parseInt(newVal.find(e => e.tag == 3).rhb * 100),
+              lastDay: parseInt(newVal.find(e => e.tag == 3).ztb * 100),
+            },
+            {
+              name: "采集数",
+              num: newVal.find(e => e.tag == 4).cnt,
+              lastWeek: parseInt(newVal.find(e => e.tag == 4).rhb * 100),
+              lastDay: parseInt(newVal.find(e => e.tag == 4).ztb * 100),
+            },
+          ]
+          this.takeChange()
+        }
+      },
+      immediate: true,
+    },
+  },
   methods: {
-    formatter(n = 0) {
+    formatter(n = 0, name) {
+      // console.log("formatter", n)
       const regex = /\d{1,3}(?=(\d{3})+(\.|$))/g // 替换规则
       n = String(Math.round(n * Math.pow(10, 2))) // 乘100 四舍五入
       let integer = n.substr(0, n.length - 2).replace(regex, "$&,") // 最后两位前的为整数
       // let decimal = n.substr(n.length - 2) // 最后两位为小数
-      const result = `${integer || 0}`
+      let result = `${integer || 0}`
       // const result = `${integer || 0}.${decimal}`
+      if (name == "设备完好率") {
+        result = result + "%"
+      }
       return result
     },
-  },
-  created() {
-    this.$nextTick(() => {
-      this.kanbanList.forEach((e, i) => {
-        this.$refs["myNum" + i][0].reset("0", e.num)
-        this.$refs["myNum" + i][0].start()
+    takeChange() {
+      this.$nextTick(() => {
+        this.kanbanList.forEach((e, i) => {
+          this.$refs["myNum" + i][0].reset("0", e.num)
+          this.$refs["myNum" + i][0].start()
+        })
       })
-    })
+    },
   },
+  created() {},
 }
 </script>
 

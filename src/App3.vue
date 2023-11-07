@@ -93,8 +93,8 @@
     </div>
     <Left />
     <Right />
-    <TopKanban />
-    <BottomKanban />
+    <TopKanban :dataList="dataList" />
+    <BottomKanban :dataList="dataList" />
   </div>
 </template>
 <script>
@@ -103,6 +103,11 @@ import Left from "./views/Left"
 import Right from "./views/Right"
 import TopKanban from "./views/TopKanban"
 import BottomKanban from "./views/BottomKanban"
+import axios from "@/axios.js"
+let apiUrl = "https://cube.yucekj.com/api/cubeMockApi/getContent?bizCode="
+if (process.env.NODE_ENV == "production") {
+  apiUrl = "/api/cubeMockApi/getContent?bizCode="
+}
 
 export default {
   components: { Left, Right, TopKanban, BottomKanban },
@@ -110,9 +115,13 @@ export default {
     return {
       dayValue: "",
       timeValue: "",
+      dataList: [],
     }
   },
   methods: {
+    axiosRquest(path) {
+      return axios.get(apiUrl + path)
+    },
     pageTo() {
       window.open("https://www.baidu.com")
     },
@@ -135,9 +144,13 @@ export default {
         this.timeValue = dayjs().format("HH:mm:ss")
       }, 1000)
     },
+    async getKanbanData() {
+      this.dataList = await this.axiosRquest("zs_vio_equip_total_ol")
+    },
   },
   created() {
     this.getTime()
+    this.getKanbanData()
   },
   mounted() {
     this.computedREM()

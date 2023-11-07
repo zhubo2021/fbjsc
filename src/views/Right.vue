@@ -80,7 +80,7 @@ export default {
     },
     async get3Dpie() {
       let res = await this.axiosRquest("zs_acd_many_area_time_ol")
-      console.log("get3Dpie", res)
+      // console.log("get3Dpie", res)
 
       let colorList = ["rgba(0, 162, 255, 1)", "rgba(255, 71, 128, 1)", "rgba(20, 210, 62, 1)", "rgba(237, 103, 1, 1)", "rgba(253, 231, 1, 1)"]
       let data = res.map((e, i) => {
@@ -322,14 +322,32 @@ export default {
       return option
     },
     async getChart4() {
-      let path
+      /* let path
       if (this.sortType == "1") {
         path = "zs_vio_equip_colletct_asc_ol"
       } else {
         path = "zs_vio_equip_colletct_desc_ol"
       }
       let res = await this.axiosRquest(path)
-      console.log("getChart4", res)
+      console.log("getChart4", res) */
+      let res
+      if (this.sortType == "1") {
+        res = [
+          { rk: 1, sbmc: "名称1", zf: 32, bh: "ksig001", dd: "浙江大队" },
+          { rk: 2, sbmc: "名称2", zf: 33, bh: "ksig002", dd: "浙江大队" },
+          { rk: 3, sbmc: "名称3", zf: 34, bh: "ksig003", dd: "浙江大队" },
+          { rk: 4, sbmc: "名称4", zf: 35, bh: "ksig004", dd: "浙江大队" },
+          { rk: 5, sbmc: "名称5", zf: 36, bh: "ksig005", dd: "浙江大队" },
+        ]
+      } else {
+        res = [
+          { rk: 1, sbmc: "名称1", zf: 50, bh: "ksig006", dd: "浙江大队" },
+          { rk: 2, sbmc: "名称2", zf: 40, bh: "ksig007", dd: "浙江大队" },
+          { rk: 3, sbmc: "名称3", zf: 20, bh: "ksig008", dd: "浙江大队" },
+          { rk: 4, sbmc: "名称4", zf: 18, bh: "ksig009", dd: "浙江大队" },
+          { rk: 5, sbmc: "名称5", zf: 15, bh: "ksig010", dd: "浙江大队" },
+        ]
+      }
       const offsetX = 10 //bar宽
       const offsetY = 5 // 顶部菱形倾斜角度 (bar宽度的一半)
       // 绘制左侧面
@@ -380,8 +398,8 @@ export default {
       echarts.graphic.registerShape("CubeLeft", CubeLeft)
       echarts.graphic.registerShape("CubeRight", CubeRight)
       echarts.graphic.registerShape("CubeTop", CubeTop)
-      let xAxisData = ["海南大道A线", "海南大道B线", "海南大道C线", "海南大道D线", "海南大道E线"]
-      let seriesData = [20, 45, 80, 46, 57]
+      let xAxisData = res.map(e => e.sbmc)
+      let seriesData = res.map(e => e.zf)
       // 蓝色渐变
       let colorArr = [
         ["rgba(0, 114, 221, 1)", "rgba(129, 228, 255, 1)"],
@@ -420,7 +438,7 @@ export default {
           axisLabel: {
             fontSize: 12,
             interval: 0,
-            color: "rgba(255, 255, 255, 0.6)",
+            color: "#fff",
             // 使用函数模板，函数参数分别为刻度数值（类目），刻度的索引
             /* formatter: function (value) {
               const length = value.length
@@ -577,14 +595,12 @@ export default {
     async getChart5() {
       let res = await this.axiosRquest("zs_vio_handle_time_ol")
       let res2 = await this.axiosRquest("zs_vio_handle_total_ol")
-      this.threeChartNum = [res2.lrzs, res2.hdzs]
-      console.log("getChart5", res, res2)
+      // console.log("getChart5", res, res2)
+      this.threeChartNum = [res2[0].lrzs, res2[0].hdzs]
 
-      let xaxisData = ["张三", "李四", "王五", "赵丽", "千奇", "昆八", "石九"]
-      let yaxisData = [90, 80, 100, 70, 65, 69, 80]
-      let yaxisData2 = Array(7)
-        .fill(0)
-        .map(() => parseInt(Math.random() * 100))
+      let xaxisData = res.map(e => e.sxr || "-")
+      let yaxisData = res.map(e => e.lrs || 0)
+      let yaxisData2 = res.map(e => e.hds || 0)
       const offsetX = 8
       const offsetY = 4
       // 绘制左侧面
