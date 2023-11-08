@@ -65,6 +65,14 @@ export default {
       }
       return result
     },
+    takeChange() {
+      this.$nextTick(() => {
+        this.kanbanList.forEach((e, i) => {
+          this.$refs["myNum" + i][0].reset("0", e.num)
+          this.$refs["myNum" + i][0].start()
+        })
+      })
+    },
   },
   watch: {
     dataList: {
@@ -96,18 +104,19 @@ export default {
               lastDay: parseInt(newVal.find(e => e.tag == 8).ztb * 100),
             },
           ]
+          this.takeChange()
         }
       },
       immediate: true,
     },
   },
   created() {
-    this.$nextTick(() => {
+    /*  this.$nextTick(() => {
       this.kanbanList.forEach((e, i) => {
         this.$refs["myNum" + i][0].reset("0", e.num)
         this.$refs["myNum" + i][0].start()
       })
-    })
+    }) */
   },
 }
 </script>
