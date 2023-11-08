@@ -493,12 +493,10 @@ export default {
             fontSize: 12,
             interval: 0,
             color: "#fff",
-            // 使用函数模板，函数参数分别为刻度数值（类目），刻度的索引
             formatter: function (value) {
               const length = value.length
-              if (length > 3) {
-                const start = Math.floor(length / 2)
-                const str = value.slice(0, start) + "\n" + value.slice(start, length)
+              if (length > 10) {
+                const str = value.slice(0, 10) + "..."
                 return str
               }
               return value
@@ -794,6 +792,7 @@ export default {
                   font-size: 16rem;
                   font-weight: 400;
                   padding-left: 10rem;">
+                  <span style="display: inline-block; width:8rem;height:8rem;border-radius:8rem;background:rgba(0, 188, 188, 1);margin-right:10rem;"></span>
                   核对数：${params[0].value}</div>
                 <div
                   style="display: flex;
@@ -803,6 +802,7 @@ export default {
                   font-size: 16rem;
                   font-weight: 400;
                   padding-left: 10rem;">
+                  <span style="display: inline-block; width:8rem;height:8rem;border-radius:8rem;background:rgba(0, 114, 221, 1);margin-right:10rem;"></span>
                   录入数：${params[2].value}</div>
                 <div
                   style="display: flex;
@@ -812,6 +812,7 @@ export default {
                   font-size: 16rem;
                   font-weight: 400;
                   padding-left: 10rem;">
+                  <span style="display: inline-block; width:8rem;height:8rem;border-radius:8rem;background:rgba(20, 210, 62, 1);margin-right:10rem;"></span>
                   准确率：${params[4].value}</div>
               </div>
             </div>

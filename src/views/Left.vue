@@ -337,9 +337,8 @@ export default {
             // 使用函数模板，函数参数分别为刻度数值（类目），刻度的索引
             formatter: function (value) {
               const length = value.length
-              if (length > 3) {
-                const start = Math.floor(length / 2)
-                const str = value.slice(0, start) + "\n" + value.slice(start, length)
+              if (length > 10) {
+                const str = value.slice(0, 10) + "..."
                 return str
               }
               return value
@@ -598,7 +597,7 @@ export default {
           padding: 0,
           position: ["100%", "0%"],
           formatter: function (params, ticket, callback) {
-            console.log("params", params)
+            // console.log("params", params)
             const item = params[0]
             const child = JSON.parse(params[2].value)
             let bg = require("@/assets/fbjsc/tankuang_head.png")
@@ -638,13 +637,13 @@ export default {
                   style="
                   display: grid;
                   grid-template-columns: 38rem 1fr;
-                  grid-template-rows: 25rem 25rem;
+                  grid-template-rows: 30rem 25rem;
                   background: rgba(0, 170, 255, 0.3);
                   font-size: 16rem;
                   font-weight: 400;
                   padding-left: 10rem;">
                   <div style="margin-top:10rem;margin-right:10rem;grid-row: 1/3;background: url(${icon1}) top center/contain no-repeat;"></div>
-                  <div>地点：${child[0]?.sbmc || "-"}</div>
+                  <div style="margin-top:2rem;">地点：${child[0]?.sbmc || "-"}</div>
                   <div>时间：${child[0]?.wfxh || "-"}</div>
                 </div>
                 <div
@@ -705,20 +704,18 @@ export default {
             show: false,
           },
           axisLabel: {
-            fontSize: 14,
+            fontSize: 12,
             interval: 0,
             color: "#fff",
-            // 使用函数模板，函数参数分别为刻度数值（类目），刻度的索引
-            /* formatter: function (value) {
+            formatter: function (value) {
               const length = value.length
-              if (length > 3) {
-                const start = Math.floor(length / 2)
-                const str = value.slice(0, start) + "\n" + value.slice(start, length)
+              if (length > 10) {
+                const str = value.slice(0, 10) + "..."
                 return str
               }
               return value
-            }, */
-            // rotate: 45,
+            },
+            rotate: 45,
           },
         },
         yAxis: {
