@@ -322,32 +322,14 @@ export default {
       return option
     },
     async getChart4() {
-      /* let path
+      let path
       if (this.sortType == "1") {
-        path = "zs_vio_equip_colletct_asc_ol"
+        path = "zs_vio_equip_collet_asc_ol"
       } else {
-        path = "zs_vio_equip_colletct_desc_ol"
+        path = "zs_vio_equip_collet_desc_ol"
       }
       let res = await this.axiosRquest(path)
-      console.log("getChart4", res) */
-      let res
-      if (this.sortType == "1") {
-        res = [
-          { rk: 1, sbmc: "名称1", zf: 32, bh: "ksig001", dd: "浙江大队" },
-          { rk: 2, sbmc: "名称2", zf: 33, bh: "ksig002", dd: "浙江大队" },
-          { rk: 3, sbmc: "名称3", zf: 34, bh: "ksig003", dd: "浙江大队" },
-          { rk: 4, sbmc: "名称4", zf: 35, bh: "ksig004", dd: "浙江大队" },
-          { rk: 5, sbmc: "名称5", zf: 36, bh: "ksig005", dd: "浙江大队" },
-        ]
-      } else {
-        res = [
-          { rk: 1, sbmc: "名称1", zf: 50, bh: "ksig006", dd: "浙江大队" },
-          { rk: 2, sbmc: "名称2", zf: 40, bh: "ksig007", dd: "浙江大队" },
-          { rk: 3, sbmc: "名称3", zf: 20, bh: "ksig008", dd: "浙江大队" },
-          { rk: 4, sbmc: "名称4", zf: 18, bh: "ksig009", dd: "浙江大队" },
-          { rk: 5, sbmc: "名称5", zf: 15, bh: "ksig010", dd: "浙江大队" },
-        ]
-      }
+      // console.log("getChart4", res)
       const offsetX = 10 //bar宽
       const offsetY = 5 // 顶部菱形倾斜角度 (bar宽度的一半)
       // 绘制左侧面
@@ -399,7 +381,15 @@ export default {
       echarts.graphic.registerShape("CubeRight", CubeRight)
       echarts.graphic.registerShape("CubeTop", CubeTop)
       let xAxisData = res.map(e => e.sbmc)
-      let seriesData = res.map(e => e.zf)
+      let seriesData
+      if (this.sortType == "1") {
+        seriesData = res.map(e => e.zf * 100)
+      } else {
+        seriesData = res.map(e => e.jf * 100)
+      }
+      let seriesData1 = res.map(e => "_" + e.sbbh)
+      let seriesData2 = res.map(e => e.ssdd)
+
       // 蓝色渐变
       let colorArr = [
         ["rgba(0, 114, 221, 1)", "rgba(129, 228, 255, 1)"],
@@ -412,11 +402,75 @@ export default {
           axisPointer: {
             type: "shadow",
           },
+          borderWidth: 0,
           borderRadius: 0,
           padding: 0,
+          position: ["-80%", "0%"],
           formatter: function (params, ticket, callback) {
-            const item = params[1]
-            return item.name + " : " + item.value
+            // console.log("params", params)
+            const item = params[0]
+            let bg = require("@/assets/fbjsc/tankuang_head.png")
+            let dom = `
+            <div
+              style="
+              background: url(${bg}) top center/contain no-repeat, #000;
+              width: 339rem;
+              border-bottom: 2rem solid #00a2ff;">
+              <div
+                style="display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding-left: 25rem;
+                padding-right: 10rem;
+                height: 49rem;
+                color: #fff;
+                font-size: 18rem;
+                font-weight: 600;"
+              >
+                <span>${item.name}</span>
+                <span style="">
+                  ${item.value}%
+                </span>
+              </div>
+              <div
+                style="padding: 10rem;
+                gap: 5rem;
+                display: flex;
+                color: #fff;
+                flex-direction: column;"
+              >
+                <div
+                  style="display: flex;
+                  align-items: center;
+                  background: rgba(0, 170, 255, 0.3);
+                  height: 32rem;
+                  font-size: 16rem;
+                  font-weight: 400;
+                  padding-left: 10rem;">
+                设备编号：${params[1].value.slice(1)}</div>
+                <div
+                  style="display: flex;
+                  align-items: center;
+                  background: rgba(0, 170, 255, 0.3);
+                  height: 32rem;
+                  font-size: 16rem;
+                  font-weight: 400;
+                  padding-left: 10rem;">
+                  所属大队：${params[2].value}</div>
+              </div>
+            </div>
+            `
+
+            /* dom = `
+             <div
+             style="
+              background: url(${bg}) top center/contain no-repeat, rgba(8, 12, 23, 0.78);width: 339rem;border-bottom: 2rem solid #00a2ff;
+             ">
+              ${item.name}
+              </div>
+            ` */
+            // return item.name + " : " + item.value
+            return dom
           },
         },
         grid: {
@@ -440,7 +494,7 @@ export default {
             interval: 0,
             color: "#fff",
             // 使用函数模板，函数参数分别为刻度数值（类目），刻度的索引
-            /* formatter: function (value) {
+            formatter: function (value) {
               const length = value.length
               if (length > 3) {
                 const start = Math.floor(length / 2)
@@ -448,7 +502,7 @@ export default {
                 return str
               }
               return value
-            }, */
+            },
             rotate: 45,
           },
         },
@@ -566,6 +620,7 @@ export default {
           },
           {
             type: "bar",
+            // show: false,
             label: {
               /* normal: {
                 show: true,
@@ -582,7 +637,27 @@ export default {
               color: "transparent",
             },
             tooltip: {},
-            data: seriesData,
+            data: seriesData1,
+          },
+          {
+            type: "bar",
+            label: {
+              /* normal: {
+                show: true,
+                position: "top",
+                formatter: e => {
+                  return e.value
+                },
+                fontSize: 16,
+                color: "#43C4F1",
+                offset: [0, -5],
+              }, */
+            },
+            itemStyle: {
+              color: "transparent",
+            },
+            tooltip: {},
+            data: seriesData2,
           },
         ],
       }
@@ -601,6 +676,7 @@ export default {
       let xaxisData = res.map(e => e.sxr || "-")
       let yaxisData = res.map(e => e.lrs || 0)
       let yaxisData2 = res.map(e => e.hds || 0)
+      let yaxisData3 = res.map(e => e.zql * 100 + "%")
       const offsetX = 8
       const offsetY = 4
       // 绘制左侧面
@@ -673,15 +749,84 @@ export default {
           axisPointer: {
             type: "shadow",
           },
-          backgroundColor: "rgba(255,255,255,0.75)",
-          extraCssText: "box-shadow: 2px 2px 4px 0px rgba(0,0,0,0.3);",
-          textStyle: {
-            fontSize: 14,
-            color: "#000",
-          },
-          formatter: (params, ticket, callback) => {
-            const item = params[1]
-            return item.name + " : " + item.value + " 个"
+          borderWidth: 0,
+          borderRadius: 0,
+          padding: 0,
+          position: ["-80%", "0%"],
+          formatter: function (params, ticket, callback) {
+            // console.log("params", params)
+            const item = params[0]
+            let bg = require("@/assets/fbjsc/tankuang_head.png")
+            let dom = `
+            <div
+              style="
+              background: url(${bg}) top center/contain no-repeat, #000;
+              width: 339rem;
+              border-bottom: 2rem solid #00a2ff;">
+              <div
+                style="display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding-left: 25rem;
+                padding-right: 10rem;
+                height: 49rem;
+                color: #fff;
+                font-size: 18rem;
+                font-weight: 600;"
+              >
+                <span>${item.name}</span>
+                <span style="">
+                  ${item.value+params[2].value}
+                </span>
+              </div>
+              <div
+                style="padding: 10rem;
+                gap: 5rem;
+                display: flex;
+                color: #fff;
+                flex-direction: column;"
+              >
+                <div
+                  style="display: flex;
+                  align-items: center;
+                  background: rgba(0, 170, 255, 0.3);
+                  height: 32rem;
+                  font-size: 16rem;
+                  font-weight: 400;
+                  padding-left: 10rem;">
+                  核对数：${params[0].value}</div>
+                <div
+                  style="display: flex;
+                  align-items: center;
+                  background: rgba(0, 170, 255, 0.3);
+                  height: 32rem;
+                  font-size: 16rem;
+                  font-weight: 400;
+                  padding-left: 10rem;">
+                  录入数：${params[2].value}</div>
+                <div
+                  style="display: flex;
+                  align-items: center;
+                  background: rgba(0, 170, 255, 0.3);
+                  height: 32rem;
+                  font-size: 16rem;
+                  font-weight: 400;
+                  padding-left: 10rem;">
+                  准确率：${params[4].value}</div>
+              </div>
+            </div>
+            `
+
+            /* dom = `
+             <div
+             style="
+              background: url(${bg}) top center/contain no-repeat, rgba(8, 12, 23, 0.78);width: 339rem;border-bottom: 2rem solid #00a2ff;
+             ">
+              ${item.name}
+              </div>
+            ` */
+            // return item.name + " : " + item.value
+            return dom
           },
         },
         grid: {
@@ -910,6 +1055,13 @@ export default {
               color: "transparent",
             },
             data: yaxisData2,
+          },
+          {
+            type: "bar",
+            itemStyle: {
+              color: "transparent",
+            },
+            data: yaxisData3,
           },
         ],
       }

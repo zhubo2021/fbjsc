@@ -53,32 +53,9 @@
         </div>
       </div>
       <div class="select_tabs">
-        <div :class="{ tab_item: true, tab_sel: selectThree == '1' }" @click="sortChange('selectThree', '1')">
-          <span class="label">全部</span>
-          <!-- <span class="num">3213</span> -->
-          <animate-number mode="manual" class="num" ref="myNum1" from="0" to="0" :formatter="formatter" duration="3000" easing="easeOutQuad" />
-        </div>
-        <div :class="{ tab_item: true, tab_sel: selectThree == '2' }" @click="sortChange('selectThree', '2')">
-          <span class="label">定海</span>
-          <animate-number mode="manual" class="num" ref="myNum2" from="0" to="0" :formatter="formatter" duration="3000" easing="easeOutQuad" />
-
-          <!-- <span class="num">3213</span> -->
-        </div>
-        <div :class="{ tab_item: true, tab_sel: selectThree == '3' }" @click="sortChange('selectThree', '3')">
-          <span class="label">普陀</span>
-          <animate-number mode="manual" class="num" ref="myNum3" from="0" to="0" :formatter="formatter" duration="3000" easing="easeOutQuad" />
-
-          <!-- <span class="num">3213</span> -->
-        </div>
-        <div :class="{ tab_item: true, tab_sel: selectThree == '4' }" @click="sortChange('selectThree', '4')">
-          <span class="label">普陀山</span>
-          <animate-number mode="manual" class="num" ref="myNum4" from="0" to="0" :formatter="formatter" duration="3000" easing="easeOutQuad" />
-
-          <!-- <span class="num">3213</span> -->
-        </div>
-        <div :class="{ tab_item: true, tab_sel: selectThree == '5' }" @click="sortChange('selectThree', '5')">
-          <span class="label">新城</span>
-          <animate-number mode="manual" class="num" ref="myNum5" from="0" to="0" :formatter="formatter" duration="3000" easing="easeOutQuad" />
+        <div v-for="item in cardThree" :key="item.xh" :class="{ tab_item: true, tab_sel: selectThree == item.xh }" @click="sortChange('selectThree', item.xh)">
+          <span class="label">{{ item.xzqhmc }}</span>
+          <animate-number mode="manual" class="num" :ref="'myNum' + item.xh" from="0" to="0" :formatter="formatter" duration="3000" easing="easeOutQuad" />
         </div>
       </div>
       <div class="left_three_chart"></div>
@@ -99,7 +76,14 @@ export default {
     return {
       sortOne: "1",
       sortThree: "1",
-      selectThree: "1",
+      selectThree: "0",
+      cardThree: [
+        { xh: 0, sm_cnt: 100, xzqhmc: "全部1" },
+        { xh: 1, sm_cnt: 100, xzqhmc: "全部2" },
+        { xh: 2, sm_cnt: 100, xzqhmc: "全部3" },
+        { xh: 3, sm_cnt: 100, xzqhmc: "全部4" },
+        { xh: 4, sm_cnt: 100, xzqhmc: "全部5" },
+      ],
       currentCard: {},
       carList: [
         /* { num: 8, name: "小型新能源汽车", plateId: "浙LDA2778" },
@@ -122,6 +106,9 @@ export default {
       this[chartType] = btnType
       if (chartType == "sortOne") {
         this.getChart1()
+      }
+      if (chartType == "sortThree" || chartType == "selectThree") {
+        this.getChart2()
       }
     },
     formatter(n = 0) {
@@ -499,6 +486,48 @@ export default {
       let res = await this.axiosRquest("zs_vio_area_many_time_ol")
       console.log("getChart2", res)
 
+      // selectThree
+      let data = res.filter(e => e.xh == this.selectThree)
+
+      let arr = new Map()
+      for (let index = 0; index < data.length; index++) {
+        const element = data[index]
+
+        let obj = {
+          name: element.wfxw,
+          wf_cnt: element.wf_cnt,
+          children: [
+            {
+              rk1: element.rk1,
+              sbmc: element.sbmc,
+              wfxh: element.wfxh,
+            },
+          ],
+        }
+        if (arr.has(element.rk)) {
+          obj = arr.get(element.rk)
+          obj.children.push({
+            rk1: element.rk1,
+            sbmc: element.sbmc,
+            wfxh: element.wfxh,
+          })
+        }
+        arr.set(element.rk, obj)
+      }
+      if (this.sortThree == "1") {
+        data = Array.from(arr.values()).sort((a, b) => b.wf_cnt - a.wf_cnt)
+      } else {
+        data = Array.from(arr.values()).sort((a, b) => a.wf_cnt - b.wf_cnt)
+      }
+      console.log("data", data)
+
+      this.cardThree = [res.find(e => e.xh == 0), res.find(e => e.xh == 1), res.find(e => e.xh == 2), res.find(e => e.xh == 3), res.find(e => e.xh == 4)]
+      this.$nextTick(() => {
+        this.cardThree.forEach(e => {
+          this.$refs["myNum" + e.xh][0].reset("0", e.sm_cnt + "")
+          this.$refs["myNum" + e.xh][0].start()
+        })
+      })
       const offsetX = 10 //bar宽
       const offsetY = 5 // 顶部菱形倾斜角度 (bar宽度的一半)
       // 绘制左侧面
@@ -549,8 +578,9 @@ export default {
       echarts.graphic.registerShape("CubeLeft", CubeLeft)
       echarts.graphic.registerShape("CubeRight", CubeRight)
       echarts.graphic.registerShape("CubeTop", CubeTop)
-      let xAxisData = ["闯红灯", "未系安全带", "非法停车", "禁闯", "占用车道"]
-      let seriesData = [20, 45, 60, 10, 20]
+      let xAxisData = data.map(e => e.name)
+      let seriesData = data.map(e => e.wf_cnt)
+      let seriesData2 = data.map(e => JSON.stringify(e.children))
       // 蓝色渐变
       let colorArr = [
         ["rgba(0, 114, 221, 1)", "rgba(129, 228, 255, 1)"],
@@ -563,9 +593,99 @@ export default {
           axisPointer: {
             type: "shadow",
           },
+          borderWidth: 0,
+          borderRadius: 0,
+          padding: 0,
+          position: ["100%", "0%"],
           formatter: function (params, ticket, callback) {
-            const item = params[1]
-            return item.name + " : " + item.value
+            console.log("params", params)
+            const item = params[0]
+            const child = JSON.parse(params[2].value)
+            let bg = require("@/assets/fbjsc/tankuang_head.png")
+            let icon1 = require("@/assets/fbjsc/1.png")
+            let icon2 = require("@/assets/fbjsc/2.png")
+            let icon3 = require("@/assets/fbjsc/3.png")
+            let dom = `
+            <div
+              style="
+              background: url(${bg}) top center/contain no-repeat, #000;
+              width: 339rem;
+              border-bottom: 2rem solid #00a2ff;">
+              <div
+                style="display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding-left: 25rem;
+                padding-right: 10rem;
+                height: 49rem;
+                color: #fff;
+                font-size: 18rem;
+                font-weight: 600;"
+              >
+                <span>${item.name}</span>
+                <span style="">
+                  ${item.value}
+                </span>
+              </div>
+              <div
+                style="padding: 10rem;
+                gap: 5rem;
+                display: flex;
+                color: #fff;
+                flex-direction: column;"
+              >
+                <div
+                  style="
+                  display: grid;
+                  grid-template-columns: 38rem 1fr;
+                  grid-template-rows: 25rem 25rem;
+                  background: rgba(0, 170, 255, 0.3);
+                  font-size: 16rem;
+                  font-weight: 400;
+                  padding-left: 10rem;">
+                  <div style="margin-top:10rem;margin-right:10rem;grid-row: 1/3;background: url(${icon1}) top center/contain no-repeat;"></div>
+                  <div>地点：${child[0]?.sbmc || "-"}</div>
+                  <div>时间：${child[0]?.wfxh || "-"}</div>
+                </div>
+                <div
+                  style="
+                  display: grid;
+                  grid-template-columns: 38rem 1fr;
+                  grid-template-rows: 25rem 25rem;
+                  background: rgba(0, 170, 255, 0.3);
+                  font-size: 16rem;
+                  font-weight: 400;
+                  padding-left: 10rem;">
+                  <div style="margin-top:10rem;margin-right:10rem;grid-row: 1/3;background: url(${icon2}) top center/contain no-repeat;"></div>
+                  <div>地点：${child[1]?.sbmc || "-"}</div>
+                  <div>时间：${child[1]?.wfxh || "-"}</div>
+                </div>
+                <div
+                  style="
+                  display: grid;
+                  grid-template-columns: 38rem 1fr;
+                  grid-template-rows: 25rem 25rem;
+                  background: rgba(0, 170, 255, 0.3);
+                  font-size: 16rem;
+                  font-weight: 400;
+                  padding-left: 10rem;">
+                  <div style="margin-top:10rem;margin-right:10rem;grid-row: 1/3;background: url(${icon3}) top center/contain no-repeat;"></div>
+                  <div>地点：${child[2]?.sbmc || "-"}</div>
+                  <div>时间：${child[2]?.wfxh || "-"}</div>
+                </div>
+            </div>
+            `
+
+            /* dom = `
+             <div
+             style="
+              background: url(${bg}) top center/contain no-repeat, rgba(8, 12, 23, 0.78);width: 339rem;border-bottom: 2rem solid #00a2ff;
+             ">
+              ${item.name}
+              </div>
+            ` */
+            // return item.name + " : " + item.value
+            return dom
           },
         },
         grid: {
@@ -715,23 +835,17 @@ export default {
           },
           {
             type: "bar",
-            label: {
-              /* normal: {
-                show: true,
-                position: "top",
-                formatter: e => {
-                  return e.value
-                },
-                fontSize: 16,
-                color: "#43C4F1",
-                offset: [0, -5],
-              }, */
-            },
             itemStyle: {
               color: "transparent",
             },
-            tooltip: {},
             data: seriesData,
+          },
+          {
+            type: "bar",
+            itemStyle: {
+              color: "transparent",
+            },
+            data: seriesData2,
           },
         ],
       }
@@ -747,10 +861,6 @@ export default {
     this.$nextTick(() => {
       this.getChart1()
       this.getChart2()
-      ;["123", "523", "1233", "123", "1223"].forEach((e, i) => {
-        this.$refs["myNum" + (i + 1)].reset("0", e)
-        this.$refs["myNum" + (i + 1)].start()
-      })
     })
     this.getCarData()
   },
