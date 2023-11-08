@@ -229,7 +229,9 @@ export default {
       let xAxisData = res.map(e => e.sbmc)
       let seriesData1 = res.map(e => e.cjs)
       let seriesData2 = res.map(e => e.lrs)
-      let seriesData3 = res.map(e => e.cjl * 100)
+      let seriesData3 = res.map(e => parseInt(e.cjl * 100))
+      let seriesData4 = res.map(e => "_" + e.sbbh)
+      let seriesData5 = res.map(e => e.sblx)
 
       // 蓝色渐变
       let colorArr = [
@@ -268,7 +270,7 @@ export default {
                 font-size: 18rem;
                 font-weight: 600;"
               >
-                <span>${item.name}</span>
+                <span>${item.name.length > 12 ? item.name.slice(0, 12) + "..." : item.name}</span>
                 <span style="">
                   ${item.value}%
                 </span>
@@ -280,6 +282,24 @@ export default {
                 color: #fff;
                 flex-direction: column;"
               >
+                <div
+                  style="display: flex;
+                  align-items: center;
+                  background: rgba(0, 170, 255, 0.3);
+                  height: 32rem;
+                  font-size: 16rem;
+                  font-weight: 400;
+                  padding-left: 10rem;">
+                设备编号：${params[3].value.slice(1)}</div>
+                <div
+                  style="display: flex;
+                  align-items: center;
+                  background: rgba(0, 170, 255, 0.3);
+                  height: 32rem;
+                  font-size: 16rem;
+                  font-weight: 400;
+                  padding-left: 10rem;">
+                设备类型：${params[4].value}</div>
                 <div
                   style="display: flex;
                   align-items: center;
@@ -337,8 +357,8 @@ export default {
             // 使用函数模板，函数参数分别为刻度数值（类目），刻度的索引
             formatter: function (value) {
               const length = value.length
-              if (length > 10) {
-                const str = value.slice(0, 10) + "..."
+              if (length > 5) {
+                const str = value.slice(0, 5) + "..."
                 return str
               }
               return value
@@ -473,6 +493,20 @@ export default {
             },
             data: seriesData2,
           },
+          {
+            type: "bar",
+            itemStyle: {
+              color: "transparent",
+            },
+            data: seriesData4,
+          },
+          {
+            type: "bar",
+            itemStyle: {
+              color: "transparent",
+            },
+            data: seriesData5,
+          },
         ],
       }
 
@@ -482,8 +516,15 @@ export default {
       this._myChart1.setOption(option)
     },
     async getChart2() {
-      let res = await this.axiosRquest("zs_vio_area_many_time_ol")
-      console.log("getChart2", res)
+      let path
+      if (this.sortThree == "1") {
+        path = "zs_vio_area_many_time_desc_ol"
+      } else {
+        path = "zs_vio_area_many_time_asc_ol"
+      }
+      let res = await this.axiosRquest(path)
+      // res = res.sort((a, b) => a.wf_cnt - b.wf_cnt)
+      // console.log("getChart2", res)
 
       // selectThree
       let data = res.filter(e => e.xh == this.selectThree)
@@ -518,7 +559,7 @@ export default {
       } else {
         data = Array.from(arr.values()).sort((a, b) => a.wf_cnt - b.wf_cnt)
       }
-      console.log("data", data)
+      // console.log("data", data)
 
       this.cardThree = [res.find(e => e.xh == 0), res.find(e => e.xh == 1), res.find(e => e.xh == 2), res.find(e => e.xh == 3), res.find(e => e.xh == 4)]
       this.$nextTick(() => {
@@ -621,7 +662,7 @@ export default {
                 font-size: 18rem;
                 font-weight: 600;"
               >
-                <span>${item.name}</span>
+                <span>${item.name.length > 14 ? item.name.slice(0, 14) + "..." : item.name}</span>
                 <span style="">
                   ${item.value}
                 </span>
@@ -643,8 +684,12 @@ export default {
                   font-weight: 400;
                   padding-left: 10rem;">
                   <div style="margin-top:10rem;margin-right:10rem;grid-row: 1/3;background: url(${icon1}) top center/contain no-repeat;"></div>
-                  <div style="margin-top:2rem;">地点：${child[0]?.sbmc || "-"}</div>
-                  <div>时间：${child[0]?.wfxh || "-"}</div>
+                  <div style="margin-top:5rem;">地点：
+                  ${child[0]?.sbmc && child[0]?.sbmc.length > 12 ? child[0]?.sbmc.slice(0, 12) + "..." : child[0]?.sbmc ? child[0]?.sbmc : "-"}
+                  </div>
+                  <div>时间：
+                  ${child[0]?.wfxh && child[0]?.wfxh.length > 18 ? child[0]?.wfxh.slice(0, 18) + "..." : child[0]?.wfxh ? child[0]?.wfxh : "-"}
+                  </div>
                 </div>
                 <div
                   style="
@@ -656,8 +701,12 @@ export default {
                   font-weight: 400;
                   padding-left: 10rem;">
                   <div style="margin-top:10rem;margin-right:10rem;grid-row: 1/3;background: url(${icon2}) top center/contain no-repeat;"></div>
-                  <div>地点：${child[1]?.sbmc || "-"}</div>
-                  <div>时间：${child[1]?.wfxh || "-"}</div>
+                  <div style="margin-top:5rem;">地点：
+                  ${child[1]?.sbmc && child[1]?.sbmc.length > 12 ? child[1]?.sbmc.slice(0, 12) + "..." : child[1]?.sbmc ? child[1]?.sbmc : "-"}
+                  </div>
+                  <div>时间：
+                  ${child[1]?.wfxh && child[1]?.wfxh.length > 18 ? child[1]?.wfxh.slice(0, 18) + "..." : child[1]?.wfxh ? child[1]?.wfxh : "-"}
+                  </div>
                 </div>
                 <div
                   style="
@@ -669,21 +718,16 @@ export default {
                   font-weight: 400;
                   padding-left: 10rem;">
                   <div style="margin-top:10rem;margin-right:10rem;grid-row: 1/3;background: url(${icon3}) top center/contain no-repeat;"></div>
-                  <div>地点：${child[2]?.sbmc || "-"}</div>
-                  <div>时间：${child[2]?.wfxh || "-"}</div>
+                  <div style="margin-top:5rem;">地点：
+                  ${child[2]?.sbmc && child[2]?.sbmc.length > 12 ? child[2]?.sbmc.slice(0, 12) + "..." : child[2]?.sbmc ? child[2]?.sbmc : "-"}
+                  </div>
+                  <div>时间：
+                  ${child[2]?.wfxh && child[2]?.wfxh.length > 18 ? child[2]?.wfxh.slice(0, 18) + "..." : child[2]?.wfxh ? child[2]?.wfxh : "-"}
+                  </div>
                 </div>
             </div>
             `
 
-            /* dom = `
-             <div
-             style="
-              background: url(${bg}) top center/contain no-repeat, rgba(8, 12, 23, 0.78);width: 339rem;border-bottom: 2rem solid #00a2ff;
-             ">
-              ${item.name}
-              </div>
-            ` */
-            // return item.name + " : " + item.value
             return dom
           },
         },
@@ -709,8 +753,8 @@ export default {
             color: "#fff",
             formatter: function (value) {
               const length = value.length
-              if (length > 10) {
-                const str = value.slice(0, 10) + "..."
+              if (length > 5) {
+                const str = value.slice(0, 5) + "..."
                 return str
               }
               return value
@@ -1037,8 +1081,7 @@ export default {
         height: 32rem;
         font-size: 16rem;
         font-weight: 400;
-        margin-left: 90rem;
-        text-indent: -80rem;
+        padding-left: 10rem;
       }
     }
   }

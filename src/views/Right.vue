@@ -38,8 +38,8 @@
         <div class="sort_btns"></div>
       </div>
       <div class="filter_bts">
-        <div class="filter_item filter_active">违法核对总数：{{ threeChartNum[0] }}</div>
-        <div class="filter_item">违法录入总数：{{ threeChartNum[1] }}</div>
+        <div class="filter_item filter_active">违法录入总数：{{ threeChartNum[0] }}</div>
+        <div class="filter_item">违法核对总数：{{ threeChartNum[1] }}</div>
       </div>
       <div class="right_three_chart"></div>
     </div>
@@ -324,12 +324,12 @@ export default {
     async getChart4() {
       let path
       if (this.sortType == "1") {
-        path = "zs_vio_equip_collet_asc_ol"
+        path = "zs_vio_equip_collect_asc_ol"
       } else {
-        path = "zs_vio_equip_collet_desc_ol"
+        path = "zs_vio_equip_collect_desc_ol"
       }
       let res = await this.axiosRquest(path)
-      // console.log("getChart4", res)
+      console.log("getChart4", res)
       const offsetX = 10 //bar宽
       const offsetY = 5 // 顶部菱形倾斜角度 (bar宽度的一半)
       // 绘制左侧面
@@ -389,6 +389,7 @@ export default {
       }
       let seriesData1 = res.map(e => "_" + e.sbbh)
       let seriesData2 = res.map(e => e.ssdd)
+      let seriesData3 = res.map(e => e.sblx)
 
       // 蓝色渐变
       let colorArr = [
@@ -406,7 +407,7 @@ export default {
           borderRadius: 0,
           padding: 0,
           position: ["-80%", "0%"],
-          formatter: function (params, ticket, callback) {
+          formatter: (params, ticket, callback) => {
             // console.log("params", params)
             const item = params[0]
             let bg = require("@/assets/fbjsc/tankuang_head.png")
@@ -429,7 +430,7 @@ export default {
               >
                 <span>${item.name}</span>
                 <span style="">
-                  ${item.value}%
+                  ${this.sortType == "1" ? parseInt(item.value) : -parseInt(item.value)}%
                 </span>
               </div>
               <div
@@ -448,6 +449,15 @@ export default {
                   font-weight: 400;
                   padding-left: 10rem;">
                 设备编号：${params[1].value.slice(1)}</div>
+                <div
+                  style="display: flex;
+                  align-items: center;
+                  background: rgba(0, 170, 255, 0.3);
+                  height: 32rem;
+                  font-size: 16rem;
+                  font-weight: 400;
+                  padding-left: 10rem;">
+                设备类型：${params[3].value}</div>
                 <div
                   style="display: flex;
                   align-items: center;
@@ -495,8 +505,8 @@ export default {
             color: "#fff",
             formatter: function (value) {
               const length = value.length
-              if (length > 10) {
-                const str = value.slice(0, 10) + "..."
+              if (length > 5) {
+                const str = value.slice(0, 5) + "..."
                 return str
               }
               return value
@@ -639,6 +649,14 @@ export default {
           },
           {
             type: "bar",
+            itemStyle: {
+              color: "transparent",
+            },
+            tooltip: {},
+            data: seriesData3,
+          },
+          {
+            type: "bar",
             label: {
               /* normal: {
                 show: true,
@@ -668,13 +686,13 @@ export default {
     async getChart5() {
       let res = await this.axiosRquest("zs_vio_handle_time_ol")
       let res2 = await this.axiosRquest("zs_vio_handle_total_ol")
-      // console.log("getChart5", res, res2)
+      console.log("getChart5", res, res2)
       this.threeChartNum = [res2[0].lrzs, res2[0].hdzs]
 
       let xaxisData = res.map(e => e.sxr || "-")
       let yaxisData = res.map(e => e.lrs || 0)
       let yaxisData2 = res.map(e => e.hds || 0)
-      let yaxisData3 = res.map(e => e.zql * 100 + "%")
+      let yaxisData3 = res.map(e => parseInt(e.lrl * 100) + "%")
       const offsetX = 8
       const offsetY = 4
       // 绘制左侧面
@@ -774,7 +792,7 @@ export default {
               >
                 <span>${item.name}</span>
                 <span style="">
-                  ${item.value+params[2].value}
+                  ${item.value + params[1].value}
                 </span>
               </div>
               <div
@@ -803,7 +821,7 @@ export default {
                   font-weight: 400;
                   padding-left: 10rem;">
                   <span style="display: inline-block; width:8rem;height:8rem;border-radius:8rem;background:rgba(0, 114, 221, 1);margin-right:10rem;"></span>
-                  录入数：${params[2].value}</div>
+                  录入数：${params[1].value}</div>
                 <div
                   style="display: flex;
                   align-items: center;
@@ -813,7 +831,7 @@ export default {
                   font-weight: 400;
                   padding-left: 10rem;">
                   <span style="display: inline-block; width:8rem;height:8rem;border-radius:8rem;background:rgba(20, 210, 62, 1);margin-right:10rem;"></span>
-                  准确率：${params[4].value}</div>
+                  录入率：${params[4].value}</div>
               </div>
             </div>
             `
