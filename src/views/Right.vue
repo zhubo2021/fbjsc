@@ -457,7 +457,7 @@ export default {
                   font-size: 16rem;
                   font-weight: 400;
                   padding-left: 10rem;">
-                设备类型：${params[3].value}</div>
+                设备类型：${params[2].value}</div>
                 <div
                   style="display: flex;
                   align-items: center;
@@ -466,7 +466,7 @@ export default {
                   font-size: 16rem;
                   font-weight: 400;
                   padding-left: 10rem;">
-                  所属大队：${params[2].value}</div>
+                  所属大队：${params[3].value}</div>
               </div>
             </div>
             `
@@ -811,7 +811,7 @@ export default {
                   font-weight: 400;
                   padding-left: 10rem;">
                   <span style="display: inline-block; width:8rem;height:8rem;border-radius:8rem;background:rgba(0, 188, 188, 1);margin-right:10rem;"></span>
-                  核对数：${params[0].value}</div>
+                  核对数：${params[1].value}</div>
                 <div
                   style="display: flex;
                   align-items: center;
@@ -821,7 +821,7 @@ export default {
                   font-weight: 400;
                   padding-left: 10rem;">
                   <span style="display: inline-block; width:8rem;height:8rem;border-radius:8rem;background:rgba(0, 114, 221, 1);margin-right:10rem;"></span>
-                  录入数：${params[1].value}</div>
+                  录入数：${params[0].value}</div>
                 <div
                   style="display: flex;
                   align-items: center;
