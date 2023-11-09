@@ -9,11 +9,13 @@
 
       <div class="percent_num">
         同比上周
-        <span :class="item.lastWeek <= 0 ? 'blue-num' : 'red-num'">{{ item.lastWeek <= 0 ? item.lastWeek : "+" + item.lastWeek }}%</span>
+        <span v-if="item.lastWeek == 0" class="orange-num">持平</span>
+        <span v-else :class="item.lastWeek < 0 ? 'blue-num' : 'red-num'">{{ item.lastWeek < 0 ? item.lastWeek : "+" + item.lastWeek }}%</span>
       </div>
       <div class="percent_num">
         环比昨日
-        <span :class="item.lastDay <= 0 ? 'blue-num' : 'red-num'">{{ item.lastDay <= 0 ? item.lastDay : "+" + item.lastDay }}%</span>
+        <span v-if="item.lastWeek == 0" class="orange-num">持平</span>
+        <span v-else :class="item.lastDay < 0 ? 'blue-num' : 'red-num'">{{ item.lastDay < 0 ? item.lastDay : "+" + item.lastDay }}%</span>
       </div>
     </div>
   </div>
@@ -82,26 +84,26 @@ export default {
             {
               name: "审验数",
               num: newVal.find(e => e.tag == 5).cnt,
-              lastWeek: parseInt(newVal.find(e => e.tag == 5).rhb * 100),
-              lastDay: parseInt(newVal.find(e => e.tag == 5).ztb * 100),
+              lastWeek: parseInt(newVal.find(e => e.tag == 5).ztb * 100),
+              lastDay: parseInt(newVal.find(e => e.tag == 5).rhb * 100),
             },
             {
               name: "审验率",
               num: parseInt(newVal.find(e => e.tag == 6).cnt * 100),
-              lastWeek: parseInt(newVal.find(e => e.tag == 6).rhb * 100),
-              lastDay: parseInt(newVal.find(e => e.tag == 6).ztb * 100),
+              lastWeek: parseInt(newVal.find(e => e.tag == 6).ztb * 100),
+              lastDay: parseInt(newVal.find(e => e.tag == 6).rhb * 100),
             },
             {
               name: "录入数",
               num: newVal.find(e => e.tag == 7).cnt,
-              lastWeek: parseInt(newVal.find(e => e.tag == 7).rhb * 100),
-              lastDay: parseInt(newVal.find(e => e.tag == 7).ztb * 100),
+              lastWeek: parseInt(newVal.find(e => e.tag == 7).ztb * 100),
+              lastDay: parseInt(newVal.find(e => e.tag == 7).rhb * 100),
             },
             {
               name: "录入率",
               num: parseInt(newVal.find(e => e.tag == 8).cnt * 100),
-              lastWeek: parseInt(newVal.find(e => e.tag == 8).rhb * 100),
-              lastDay: parseInt(newVal.find(e => e.tag == 8).ztb * 100),
+              lastWeek: parseInt(newVal.find(e => e.tag == 8).ztb * 100),
+              lastDay: parseInt(newVal.find(e => e.tag == 8).rhb * 100),
             },
           ]
           this.takeChange()
@@ -171,6 +173,10 @@ export default {
   }
   .blue-num {
     color: #14d23e;
+    font-weight: 600;
+  }
+  .orange-num {
+    color: rgb(237, 103, 1);
     font-weight: 600;
   }
 }

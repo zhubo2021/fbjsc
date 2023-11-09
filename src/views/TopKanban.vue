@@ -7,13 +7,15 @@
         <animate-number mode="manual" class="card_num" :ref="'myNum' + i" from="0" to="0" :formatter="n => formatter(n, item.name)" duration="3000" easing="easeOutQuad" />
       </div>
 
-      <div class="percent_num">
+      <div :style="{ opacity: i < 3 ? 0 : 1 }" class="percent_num">
         同比上周
-        <span :class="item.lastWeek <= 0 ? 'blue-num' : 'red-num'">{{ item.lastWeek <= 0 ? item.lastWeek : "+" + item.lastWeek }}%</span>
+        <span v-if="item.lastWeek == 0" class="orange-num">持平</span>
+        <span v-else :class="item.lastWeek < 0 ? 'blue-num' : 'red-num'">{{ item.lastWeek < 0 ? item.lastWeek : "+" + item.lastWeek }}%</span>
       </div>
-      <div class="percent_num">
+      <div :style="{ opacity: i < 3 ? 0 : 1 }" class="percent_num">
         环比昨日
-        <span :class="item.lastDay <= 0 ? 'blue-num' : 'red-num'">{{ item.lastDay <= 0 ? item.lastDay : "+" + item.lastDay }}%</span>
+        <span v-if="item.lastWeek == 0" class="orange-num">持平</span>
+        <span v-else :class="item.lastDay < 0 ? 'blue-num' : 'red-num'">{{ item.lastDay < 0 ? item.lastDay : "+" + item.lastDay }}%</span>
       </div>
     </div>
   </div>
@@ -60,26 +62,26 @@ export default {
             {
               name: "设备总数",
               num: newVal.find(e => e.tag == 1).cnt,
-              lastWeek: parseInt(newVal.find(e => e.tag == 1).rhb * 100),
-              lastDay: parseInt(newVal.find(e => e.tag == 1).ztb * 100),
+              lastWeek: parseInt(newVal.find(e => e.tag == 1).ztb * 100),
+              lastDay: parseInt(newVal.find(e => e.tag == 1).rhb * 100),
             },
             {
               name: "运行设备数",
               num: newVal.find(e => e.tag == 2).cnt,
-              lastWeek: parseInt(newVal.find(e => e.tag == 2).rhb * 100),
-              lastDay: parseInt(newVal.find(e => e.tag == 2).ztb * 100),
+              lastWeek: parseInt(newVal.find(e => e.tag == 2).ztb * 100),
+              lastDay: parseInt(newVal.find(e => e.tag == 2).rhb * 100),
             },
             {
               name: "设备完好率",
               num: parseInt(newVal.find(e => e.tag == 3).cnt * 100),
-              lastWeek: parseInt(newVal.find(e => e.tag == 3).rhb * 100),
-              lastDay: parseInt(newVal.find(e => e.tag == 3).ztb * 100),
+              lastWeek: parseInt(newVal.find(e => e.tag == 3).ztb * 100),
+              lastDay: parseInt(newVal.find(e => e.tag == 3).rhb * 100),
             },
             {
               name: "采集数",
               num: newVal.find(e => e.tag == 4).cnt,
-              lastWeek: parseInt(newVal.find(e => e.tag == 4).rhb * 100),
-              lastDay: parseInt(newVal.find(e => e.tag == 4).ztb * 100),
+              lastWeek: parseInt(newVal.find(e => e.tag == 4).ztb * 100),
+              lastDay: parseInt(newVal.find(e => e.tag == 4).rhb * 100),
             },
           ]
           this.takeChange()
@@ -165,6 +167,10 @@ export default {
   }
   .blue-num {
     color: #14d23e;
+    font-weight: 600;
+  }
+  .orange-num {
+    color: rgb(237, 103, 1);
     font-weight: 600;
   }
 }

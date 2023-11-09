@@ -38,8 +38,10 @@
         <div class="sort_btns"></div>
       </div>
       <div class="filter_bts">
-        <div class="filter_item filter_active">违法录入总数：{{ threeChartNum[0] }}</div>
-        <div class="filter_item">违法核对总数：{{ threeChartNum[1] }}</div>
+        <!-- <div class="filter_item filter_active">违法录入总数：{{ threeChartNum[0] }}</div>
+        <div class="filter_item">违法核对总数：{{ threeChartNum[1] }}</div> -->
+        <div :class="{ filter_item: true, filter_active: filterType == '1' }" @click="sortChange('filterType', '1')">违法录入总数：{{ threeChartNum[0] }}</div>
+          <div :class="{ filter_item: true, filter_active: filterType == '2' }" @click="sortChange('filterType', '2')">违法核对总数：{{ threeChartNum[1] }}</div>
       </div>
       <div class="right_three_chart"></div>
     </div>
@@ -58,7 +60,7 @@ export default {
   data() {
     return {
       sortType: "1",
-      // filterType: "1",
+      filterType: "1",
       threeChartNum: [],
       threeDdata: [
         /*  { name: "普陀区管委", percent: "20%", count: "123.54", color: "#00A2FF" },
@@ -76,6 +78,14 @@ export default {
       this[chartType] = btnType
       if (chartType == "sortType") {
         this.getChart4()
+      }
+      if (chartType == "filterType") {
+        this._myChart5.setOption({legend: {
+          selected: {
+            custom1: btnType =='1',
+            custom2: btnType =='2',
+          },
+        },})
       }
     },
     async get3Dpie() {
@@ -385,7 +395,7 @@ export default {
         path = "zs_vio_equip_collect_desc_ol"
       }
       let res = await this.axiosRquest(path)
-      console.log("getChart4", res)
+      // console.log("getChart4", res)
       const offsetX = 10 //bar宽
       const offsetY = 5 // 顶部菱形倾斜角度 (bar宽度的一半)
       // 绘制左侧面
@@ -742,12 +752,12 @@ export default {
     async getChart5() {
       let res = await this.axiosRquest("zs_vio_handle_time_ol")
       let res2 = await this.axiosRquest("zs_vio_handle_total_ol")
-      console.log("getChart5", res, res2)
+      // console.log("getChart5", res, res2)
       this.threeChartNum = [res2[0].lrzs, res2[0].hdzs]
 
       let xaxisData = res.map(e => e.sxr || "-")
-      let yaxisData = res.map(e => e.lrs || 0)
-      let yaxisData2 = res.map(e => e.hds || 0)
+      let yaxisData = res.map(e => e.hds || 0)
+      let yaxisData2 = res.map(e => e.lrs || 0)
       let yaxisData3 = res.map(e => parseInt(e.lrl * 100) + "%")
       const offsetX = 8
       const offsetY = 4
@@ -867,7 +877,7 @@ export default {
                   font-weight: 400;
                   padding-left: 10rem;">
                   <span style="display: inline-block; width:8rem;height:8rem;border-radius:8rem;background:rgba(0, 188, 188, 1);margin-right:10rem;"></span>
-                  核对数：${params[1].value}</div>
+                  核对数：${params[0].value}</div>
                 <div
                   style="display: flex;
                   align-items: center;
@@ -877,7 +887,7 @@ export default {
                   font-weight: 400;
                   padding-left: 10rem;">
                   <span style="display: inline-block; width:8rem;height:8rem;border-radius:8rem;background:rgba(0, 114, 221, 1);margin-right:10rem;"></span>
-                  录入数：${params[0].value}</div>
+                  录入数：${params[1].value}</div>
                 <div
                   style="display: flex;
                   align-items: center;
@@ -887,7 +897,7 @@ export default {
                   font-weight: 400;
                   padding-left: 10rem;">
                   <span style="display: inline-block; width:8rem;height:8rem;border-radius:8rem;background:rgba(20, 210, 62, 1);margin-right:10rem;"></span>
-                  录入率：${params[4].value}</div>
+                  录入率：${params[2].value}</div>
               </div>
             </div>
             `
@@ -902,6 +912,13 @@ export default {
             ` */
             // return item.name + " : " + item.value
             return dom
+          },
+        },
+        legend: {
+          show: false,
+          selected: {
+            custom1: true,
+            custom2: false,
           },
         },
         grid: {
@@ -921,6 +938,7 @@ export default {
             show: false,
           },
           axisLabel: {
+            interval: 0,
             fontSize: 14,
             color: "#fff",
           },
@@ -951,6 +969,28 @@ export default {
         },
         series: [
           {
+            type: "bar",
+            itemStyle: {
+              color: "transparent",
+            },
+            data: yaxisData,
+          },
+          {
+            type: "bar",
+            itemStyle: {
+              color: "transparent",
+            },
+            data: yaxisData2,
+          },
+          {
+            type: "bar",
+            itemStyle: {
+              color: "transparent",
+            },
+            data: yaxisData3,
+          },
+          {
+            name: "custom1",
             type: "custom",
             renderItem: (params, api) => {
               const location = api.coord([api.value(0), api.value(1)])
@@ -1034,6 +1074,7 @@ export default {
             data: yaxisData,
           },
           {
+            name: "custom2",
             type: "custom",
             renderItem: (params, api) => {
               const location = api.coord([api.value(0), api.value(1)])
@@ -1115,28 +1156,6 @@ export default {
               }
             },
             data: yaxisData2,
-          },
-
-          {
-            type: "bar",
-            itemStyle: {
-              color: "transparent",
-            },
-            data: yaxisData,
-          },
-          {
-            type: "bar",
-            itemStyle: {
-              color: "transparent",
-            },
-            data: yaxisData2,
-          },
-          {
-            type: "bar",
-            itemStyle: {
-              color: "transparent",
-            },
-            data: yaxisData3,
           },
         ],
       }
@@ -1249,7 +1268,7 @@ export default {
       margin: 20rem 10rem;
       gap: 15rem;
       .filter_item {
-        // cursor: pointer;
+        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;

@@ -108,7 +108,7 @@ export default {
         this.getChart1()
       }
       if (chartType == "sortThree" || chartType == "selectThree") {
-        this.getChart2()
+        this.getChart2("sort")
       }
     },
     formatter(n = 0) {
@@ -515,7 +515,7 @@ export default {
       }
       this._myChart1.setOption(option)
     },
-    async getChart2() {
+    async getChart2(flag) {
       let path
       if (this.sortThree == "1") {
         path = "zs_vio_area_many_time_desc_ol"
@@ -554,20 +554,22 @@ export default {
         }
         arr.set(element.rk, obj)
       }
-      if (this.sortThree == "1") {
         data = Array.from(arr.values()).sort((a, b) => b.wf_cnt - a.wf_cnt)
-      } else {
-        data = Array.from(arr.values()).sort((a, b) => a.wf_cnt - b.wf_cnt)
-      }
+      // if (this.sortThree == "1") {
+      // } else {
+      //   data = Array.from(arr.values()).sort((a, b) => a.wf_cnt - b.wf_cnt)
+      // }
       // console.log("data", data)
 
       this.cardThree = [res.find(e => e.xh == 0), res.find(e => e.xh == 1), res.find(e => e.xh == 2), res.find(e => e.xh == 3), res.find(e => e.xh == 4)]
-      this.$nextTick(() => {
-        this.cardThree.forEach(e => {
-          this.$refs["myNum" + e.xh][0].reset("0", e.sm_cnt + "")
-          this.$refs["myNum" + e.xh][0].start()
+      if (flag !== "sort") {
+        this.$nextTick(() => {
+          this.cardThree.forEach(e => {
+            this.$refs["myNum" + e.xh][0].reset("0", e.sm_cnt + "")
+            this.$refs["myNum" + e.xh][0].start()
+          })
         })
-      })
+      }
       const offsetX = 10 //bar宽
       const offsetY = 5 // 顶部菱形倾斜角度 (bar宽度的一半)
       // 绘制左侧面
