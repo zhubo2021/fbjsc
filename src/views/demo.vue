@@ -55,6 +55,7 @@ export default {
 
       if (option) {
         this._myChart3D.setOption(option)
+        this.initMouse(this._myChart3D)
       }
     },
     getParametricEquation(startRatio, endRatio, isSelected, isHovered, k, h) {
@@ -170,7 +171,8 @@ export default {
         endValue = startValue + series[i].pieData.value
         series[i].pieData.startRatio = startValue / sumValue
         series[i].pieData.endRatio = endValue / sumValue
-        series[i].parametricEquation = this.getParametricEquation(series[i].pieData.startRatio, series[i].pieData.endRatio, false, false, k, series[i].pieData.value)
+        // series[i].parametricEquation = this.getParametricEquation(series[i].pieData.startRatio, series[i].pieData.endRatio, false, false, k, series[i].pieData.value)
+        series[i].parametricEquation = this.getParametricEquation(series[i].pieData.startRatio, series[i].pieData.endRatio, false, false, k, 50)
         startValue = endValue
         legendData.push(series[i].name)
       }
@@ -246,6 +248,7 @@ export default {
           viewControl: {
             //3d效果可以放大、旋转等，请自己去查看官方配置
             animation: false,
+            autoRotate: true,
             alpha: 25,
             rotateSensitivity: [0.5, 0], // 旋转  0代表不转
             zoomSensitivity: 0,
@@ -269,6 +272,55 @@ export default {
         series: series,
       }
       return option
+    },
+    initMouse(myChart) {
+      let that = { option: { series: myChart.getOption().series } }
+      let hoveredIndex = ""
+      myChart.on("mouseover", params => {
+        // 准备重新渲染扇形所需的参数
+        let isSelected
+        let isHovered
+        let startRatio
+        let endRatio
+        let k
+        // 如果触发 mouseover 的扇形当前已高亮，则不做操作
+        if (hoveredIndex === params.seriesIndex) {
+          return
+          // 否则进行高亮及必要的取消高亮操作
+        } else {
+          // 如果当前有高亮的扇形，取消其高亮状态（对 option 更新）
+          if (hoveredIndex !== "") {
+            // 从 option.series 中读取重新渲染扇形所需的参数，将是否高亮设置为 false。
+            isSelected = that.option.series[hoveredIndex].pieStatus.selected
+            isHovered = false
+            startRatio = that.option.series[hoveredIndex].pieData.startRatio
+            endRatio = that.option.series[hoveredIndex].pieData.endRatio
+            k = that.option.series[hoveredIndex].pieStatus.k
+            // 对当前点击的扇形，执行取消高亮操作（对 option 更新）
+            that.option.series[hoveredIndex].parametricEquation = this.getParametricEquation(startRatio, endRatio, isSelected, isHovered, k, 50)
+            that.option.series[hoveredIndex].pieStatus.hovered = isHovered
+            // 将此前记录的上次选中的扇形对应的系列号 seriesIndex 清空
+            hoveredIndex = ""
+          }
+          // 如果触发 mouseover 的扇形不是透明圆环，将其高亮（对 option 更新）
+          if (params.seriesName !== "mouseoutSeries" && params.seriesName !== "pie2d") {
+            // 从 option.series 中读取重新渲染扇形所需的参数，将是否高亮设置为 true。
+            // console.log(that.option)
+            isSelected = that.option.series[params.seriesIndex].pieStatus.selected
+            isHovered = true
+            startRatio = that.option.series[params.seriesIndex].pieData.startRatio
+            endRatio = that.option.series[params.seriesIndex].pieData.endRatio
+            k = that.option.series[params.seriesIndex].pieStatus.k
+            // 对当前点击的扇形，执行高亮操作（对 option 更新）
+            that.option.series[params.seriesIndex].parametricEquation = this.getParametricEquation(startRatio, endRatio, isSelected, isHovered, k, 80)
+            that.option.series[params.seriesIndex].pieStatus.hovered = isHovered
+            // 记录上次高亮的扇形对应的系列号 seriesIndex
+            hoveredIndex = params.seriesIndex
+          }
+          // 使用更新后的 option，渲染图表
+          myChart.setOption(that.option)
+        }
+      })
     },
   },
   mounted() {
