@@ -252,28 +252,27 @@ export default {
           formatter: function (params, ticket, callback) {
             // console.log("params", params)
             const item = params[0]
-            let bg = require("@/assets/fbjsc/tankuang_head.png")
+            let bg = require("@/assets/fbjsc/tankuang_head2.png")
             let dom = `
             <div
               style="
               background: url(${bg}) top center/contain no-repeat, #000;
-              width: 339rem;
+              width: 394rem;
               border-bottom: 2rem solid #00a2ff;">
               <div
                 style="display: flex;
                 align-items: center;
                 justify-content: space-between;
-                padding-left: 25rem;
+                padding-left: 50rem;
                 padding-right: 10rem;
-                height: 49rem;
+                height: 74rem;
+                padding-top:10rem;
                 color: #fff;
                 font-size: 18rem;
                 font-weight: 600;"
               >
-                <span>${item.name.length > 12 ? item.name.slice(0, 12) + "..." : item.name}</span>
-                <span style="">
-                  ${item.value}%
-                </span>
+                <span style="max-width: 400rem;word-break: break-all;word-wrap: break-word;white-space:pre-wrap;">${item.name}</span>
+                <span>${item.value}%</span>
               </div>
               <div
                 style="padding: 10rem;
@@ -554,7 +553,7 @@ export default {
         }
         arr.set(element.rk, obj)
       }
-        data = Array.from(arr.values()).sort((a, b) => b.wf_cnt - a.wf_cnt)
+      data = Array.from(arr.values()).sort((a, b) => b.wf_cnt - a.wf_cnt)
       // if (this.sortThree == "1") {
       // } else {
       //   data = Array.from(arr.values()).sort((a, b) => a.wf_cnt - b.wf_cnt)

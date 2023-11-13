@@ -35,13 +35,22 @@
     <div class="right_three_container">
       <div class="top_title">
         <span class="title_label">工作量分布情况</span>
-        <div class="sort_btns"></div>
+        <div class="sort_btns">
+          <div :class="{ normal_btn: true, active_btn: filterType == '1' }" @click="sortChange('filterType', '1')">全部</div>
+          <div :class="{ normal_btn: true, active_btn: filterType == '2' }" @click="sortChange('filterType', '2')">核对数</div>
+          <div :class="{ normal_btn: true, active_btn: filterType == '3' }" @click="sortChange('filterType', '3')">录入数</div>
+          <div :class="{ normal_btn: true, active_btn: filterType == '4' }" @click="sortChange('filterType', '4')">录入率</div>
+        </div>
       </div>
       <div class="filter_bts">
         <!-- <div class="filter_item filter_active">违法录入总数：{{ threeChartNum[0] }}</div>
         <div class="filter_item">违法核对总数：{{ threeChartNum[1] }}</div> -->
-        <div :class="{ filter_item: true, filter_active: filterType == '1' }" @click="sortChange('filterType', '1')">违法录入总数：{{ threeChartNum[0] }}</div>
-          <div :class="{ filter_item: true, filter_active: filterType == '2' }" @click="sortChange('filterType', '2')">违法核对总数：{{ threeChartNum[1] }}</div>
+        <div class="filter_item">
+          违法录入总数：<span>{{ formatter(threeChartNum[0]) }}</span>
+        </div>
+        <div class="filter_item">
+          违法核对总数：<span>{{ formatter(threeChartNum[1]) }}</span>
+        </div>
       </div>
       <div class="right_three_chart"></div>
     </div>
@@ -61,7 +70,7 @@ export default {
     return {
       sortType: "1",
       filterType: "1",
-      threeChartNum: [],
+      threeChartNum: [0, 0],
       threeDdata: [
         /*  { name: "普陀区管委", percent: "20%", count: "123.54", color: "#00A2FF" },
         { name: "普陀区", percent: "20%", count: "123.54", color: "#FC2626" },
@@ -74,18 +83,33 @@ export default {
     axiosRquest(path) {
       return axios.get(apiUrl + path)
     },
+    formatter(n = 0) {
+      const regex = /\d{1,3}(?=(\d{3})+(\.|$))/g // 替换规则
+      n = String(Math.round(n * Math.pow(10, 2))) // 乘100 四舍五入
+      let integer = n.substr(0, n.length - 2).replace(regex, "$&,") // 最后两位前的为整数
+      // let decimal = n.substr(n.length - 2) // 最后两位为小数
+      const result = `${integer || 0}`
+      // const result = `${integer || 0}.${decimal}`
+      return result
+    },
     sortChange(chartType, btnType) {
       this[chartType] = btnType
       if (chartType == "sortType") {
         this.getChart4()
       }
       if (chartType == "filterType") {
-        this._myChart5.setOption({legend: {
-          selected: {
-            custom1: btnType =='1',
-            custom2: btnType =='2',
+        this._myChart5.setOption({
+          legend: {
+            selected: {
+              custom1: btnType == "2" || btnType == "1",
+              custom2: btnType == "3" || btnType == "1",
+              custom3: btnType == "4",
+              bar11: btnType == "2" || btnType == "1",
+              bar12: btnType == "3" || btnType == "1",
+              bar13: btnType == "4",
+            },
           },
-        },})
+        })
       }
     },
     async get3Dpie() {
@@ -759,6 +783,7 @@ export default {
       let yaxisData = res.map(e => e.hds || 0)
       let yaxisData2 = res.map(e => e.lrs || 0)
       let yaxisData3 = res.map(e => parseInt(e.lrl * 100) + "%")
+      let yaxisData4 = res.map(e => parseInt(e.lrl * 100))
       const offsetX = 8
       const offsetY = 4
       // 绘制左侧面
@@ -822,10 +847,14 @@ export default {
         ["rgba(0, 147, 221, 1)", "rgba(0, 88, 255, 0.2)"],
         ["rgba(0, 107, 188, 1)", "rgba(1, 56, 222, 0.2)"],
         ["rgba(0, 114, 221, 1)", "rgba(129, 228, 255, 1)"],
+
+        ["rgba(255, 214, 0, 1)", "rgba(255, 138, 0, 0.2)"],
+        ["rgba(255, 184, 0, 1)", "rgba(255, 138, 0, 0.2)"],
+        ["rgba(255, 138, 0, 1)", "rgba(252, 255, 108, 1)"],
       ]
 
       let option = {
-        backgroundColor: "black",
+        // backgroundColor: "black",
         tooltip: {
           trigger: "axis",
           axisPointer: {
@@ -836,8 +865,9 @@ export default {
           padding: 0,
           position: ["-80%", "0%"],
           formatter: function (params, ticket, callback) {
-            // console.log("params", params)
-            const item = params[0]
+            // const item = params[0]
+            let item = res.find((e, i) => i == params[0].dataIndex)
+            console.log("params", params, params.dataIndex, item)
             let bg = require("@/assets/fbjsc/tankuang_head.png")
             let dom = `
             <div
@@ -856,9 +886,9 @@ export default {
                 font-size: 18rem;
                 font-weight: 600;"
               >
-                <span>${item.name}</span>
+                <span>${item.sxr}</span>
                 <span style="">
-                  ${item.value + params[1].value}
+                  ${item.hds + item.lrs}
                 </span>
               </div>
               <div
@@ -877,7 +907,7 @@ export default {
                   font-weight: 400;
                   padding-left: 10rem;">
                   <span style="display: inline-block; width:8rem;height:8rem;border-radius:8rem;background:rgba(0, 188, 188, 1);margin-right:10rem;"></span>
-                  核对数：${params[0].value}</div>
+                  核对数：${item.hds}</div>
                 <div
                   style="display: flex;
                   align-items: center;
@@ -887,7 +917,7 @@ export default {
                   font-weight: 400;
                   padding-left: 10rem;">
                   <span style="display: inline-block; width:8rem;height:8rem;border-radius:8rem;background:rgba(0, 114, 221, 1);margin-right:10rem;"></span>
-                  录入数：${params[1].value}</div>
+                  录入数：${item.lrs}</div>
                 <div
                   style="display: flex;
                   align-items: center;
@@ -897,7 +927,7 @@ export default {
                   font-weight: 400;
                   padding-left: 10rem;">
                   <span style="display: inline-block; width:8rem;height:8rem;border-radius:8rem;background:rgba(20, 210, 62, 1);margin-right:10rem;"></span>
-                  录入率：${params[2].value}</div>
+                  录入率：${parseInt(item.lrl * 100) + "%"}</div>
               </div>
             </div>
             `
@@ -918,7 +948,8 @@ export default {
           show: false,
           selected: {
             custom1: true,
-            custom2: false,
+            custom2: true,
+            custom3: false,
           },
         },
         grid: {
@@ -965,10 +996,17 @@ export default {
           axisLabel: {
             fontSize: 14,
             color: "#fff",
+            formatter: value => {
+              if (this.filterType == "4") {
+                return value + "%"
+              }
+              return value
+            },
           },
         },
         series: [
-          {
+          /* {
+            name: "bar1",
             type: "bar",
             itemStyle: {
               color: "transparent",
@@ -976,6 +1014,7 @@ export default {
             data: yaxisData,
           },
           {
+            name: "bar2",
             type: "bar",
             itemStyle: {
               color: "transparent",
@@ -983,12 +1022,13 @@ export default {
             data: yaxisData2,
           },
           {
+            name: "bar3",
             type: "bar",
             itemStyle: {
               color: "transparent",
             },
             data: yaxisData3,
-          },
+          }, */
           {
             name: "custom1",
             type: "custom",
@@ -1157,6 +1197,91 @@ export default {
             },
             data: yaxisData2,
           },
+          {
+            name: "custom3",
+            type: "custom",
+            renderItem: (params, api) => {
+              const location = api.coord([api.value(0), api.value(1)])
+              const xAxisPoint = api.coord([api.value(0), 0])
+              const distance = 11
+              return {
+                type: "group",
+                children: [
+                  {
+                    type: "CubeLeft",
+                    shape: {
+                      api,
+                      xValue: api.value(0),
+                      yValue: api.value(1),
+                      x: location[0] + distance,
+                      y: location[1],
+                      xAxisPoint: [xAxisPoint[0] + distance, xAxisPoint[1]],
+                    },
+                    style: {
+                      fill: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        {
+                          offset: 0,
+                          color: colorArr[6][0],
+                        },
+                        {
+                          offset: 1,
+                          color: colorArr[6][1],
+                        },
+                      ]),
+                    },
+                  },
+                  {
+                    type: "CubeRight",
+                    shape: {
+                      api,
+                      xValue: api.value(0),
+                      yValue: api.value(1),
+                      x: location[0] + distance,
+                      y: location[1],
+                      xAxisPoint: [xAxisPoint[0] + distance, xAxisPoint[1]],
+                    },
+                    style: {
+                      fill: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        {
+                          offset: 0,
+                          color: colorArr[7][0],
+                        },
+                        {
+                          offset: 1,
+                          color: colorArr[7][1],
+                        },
+                      ]),
+                    },
+                  },
+                  {
+                    type: "CubeTop",
+                    shape: {
+                      api,
+                      xValue: api.value(0),
+                      yValue: api.value(1),
+                      x: location[0] + distance,
+                      y: location[1],
+                      xAxisPoint: [xAxisPoint[0] + distance, xAxisPoint[1]],
+                    },
+                    style: {
+                      fill: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        {
+                          offset: 0,
+                          color: colorArr[8][0],
+                        },
+                        {
+                          offset: 1,
+                          color: colorArr[8][1],
+                        },
+                      ]),
+                    },
+                  },
+                ],
+              }
+            },
+
+            data: yaxisData4,
+          },
         ],
       }
       if (!this._myChart5) {
@@ -1261,6 +1386,14 @@ export default {
     }
   }
   .right_three_container {
+    .sort_btns {
+      gap: 5rem;
+      .normal_btn {
+        width: 53rem;
+        height: 32rem;
+        font-size: 14rem;
+      }
+    }
     .filter_bts {
       display: flex;
       align-items: center;
@@ -1268,7 +1401,7 @@ export default {
       margin: 20rem 10rem;
       gap: 15rem;
       .filter_item {
-        cursor: pointer;
+        // cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1277,7 +1410,13 @@ export default {
         color: #00a3ff;
         font-size: 16rem;
         font-weight: 500;
-        background: url(~@/assets/fbjsc/part6_tab_nor.png) center/cover no-repeat;
+        // background: url(~@/assets/fbjsc/part6_tab_nor.png) center/cover no-repeat;
+        span {
+          color: #fff;
+          font-family: DIN Black;
+          font-size: 22px;
+          font-weight: 900;
+        }
       }
       .filter_active {
         color: #fff;
