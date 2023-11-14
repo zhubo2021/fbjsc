@@ -8,7 +8,7 @@
       <div class="head_label">非现场采集监管驾驶舱</div>
       <div class="search_btn" @click="pageTo">查询</div>
     </div>
-    <div class="center_map">
+    <div v-if="false" class="center_map">
       <div class="map_point1">
         <div class="dialog_point">
           <div class="dialog_title">警情事故</div>
@@ -91,6 +91,7 @@
         </div>
       </div>
     </div>
+    <div id="container"></div>
     <Left />
     <Right />
     <TopKanban :dataList="dataList" />
@@ -108,6 +109,10 @@ let apiUrl = "https://cube.yucekj.com/api/cubeMockApi/getContent?bizCode="
 if (process.env.NODE_ENV == "production") {
   apiUrl = "/api/cubeMockApi/getContent?bizCode="
 }
+var map = null
+var customOverlay = null
+let point1 = [121.71839041988835, 29.843869487183433]
+let point2 = []
 
 export default {
   components: { Left, Right, TopKanban, BottomKanban },
@@ -147,6 +152,167 @@ export default {
     async getKanbanData() {
       this.dataList = await this.axiosRquest("zs_vio_equip_total_ol")
     },
+    initMap() {
+      window.init = () => {
+        this.init()
+      }
+      let script = document.createElement("script")
+      script.type = "text/javascript"
+      script.src = `//api.map.baidu.com/api?v=3.0&ak=GAp7ANvstQXFo9sBF4TO772lvNPzz7ib&callback=init`
+      document.body.appendChild(script)
+    },
+    init() {
+      let self = this
+      // console.log("init")
+      map = new BMap.Map("container")
+      // console.log("map", map)
+      var point = new BMap.Point(121.71839041988835, 29.843869487183433)
+      map.centerAndZoom(point, 13)
+      map.enableScrollWheelZoom() // 启动滚轮
+      this.setPoint()
+      // setPoint2()
+      map.addEventListener("click", function (event) {
+        if (!event.overlay) {
+          this.removeOverlay(customOverlay)
+          // customOverlay = null
+        }
+      })
+      function ComplexCustomOverlay(point) {
+        self._point = point
+      }
+      ComplexCustomOverlay.prototype = new BMap.Overlay()
+      ComplexCustomOverlay.prototype.initialize = map => {
+        this._map = map
+        this._div = this.createDOM()
+        map.getPanes().labelPane.appendChild(this._div)
+
+        return this._div
+      }
+
+      ComplexCustomOverlay.prototype.draw = () => {
+        var pixel = this._map.pointToOverlayPixel(self._point)
+        // console.log("pixel", pixel, this._div, self._point)
+        this._div.style.left = pixel.x - 100 + "rem"
+        this._div.style.top = pixel.y - 200 + "rem"
+      }
+      customOverlay = new ComplexCustomOverlay(new BMap.Point(121.71839041988835, 29.843869487183433))
+      // map.addOverlay(customOverlay)
+    },
+    setPoint() {
+      let point = new BMap.Point(121.71839041988835, 29.843869487183433)
+      let bigSize = new BMap.Size(50, 38)
+      let img = require("@/assets/fbjsc/point1.png")
+      let icon = new BMap.Icon(img, bigSize)
+      let marker = new BMap.Marker(point, { icon })
+      map.addOverlay(marker)
+      marker.addEventListener("click", function () {
+        // alert("您点击了标注")
+        // console.log("marker_click")
+        map.addOverlay(customOverlay)
+        /* if (!customOverlay) {
+          setPoint2()
+        } */
+      })
+    },
+    setPoint2() {
+      customOverlay = new BMap.CustomOverlay(this.createDOM, {
+        point: new BMap.Point(121.71839041988835, 29.843869487183433),
+        offsetY: -60,
+        map,
+      })
+      // console.log("customOverlay", customOverlay)
+      map.addOverlay(customOverlay)
+    },
+    createDOM() {
+      let img = require("@/assets/fbjsc/tankuang_head.png")
+      var div = document.createElement("div")
+      div.style.position = "absolute"
+      div.style.left = "0"
+      div.style.top = "0"
+      // div.style.background = "url(./imgs/tankuang_head.png) top center/contain no-repeat, rgba(8, 12, 23, 0.78);"
+      div.style.backgroundImage = "url(" + img + ")"
+      div.style.backgroundPosition = "top center"
+      div.style.backgroundSize = "contain"
+      div.style.backgroundRepeat = "no-repeat"
+      div.style.backgroundColor = "rgba(8, 12, 23, 0.78)"
+      div.style.width = "339rem"
+      div.style.color = "#fff"
+      div.style.borderBottom = "2rem solid #00a2ff;"
+
+      let domString = `
+          <div style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-left: 25rem;
+            padding-right: 10rem;
+            height: 49rem;
+            font-size: 18rem;
+            font-weight: 600;
+          ">
+            <span>海南大道C线违法抓拍</span>
+            <span class="status"
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              "
+            ><span style="
+                background:#8D9293; 
+                margin-right: 10rem;
+                display: inline-block;
+                width: 7rem;
+                height: 7rem;
+                border-radius: 7rem;"
+              ></span>停用</span>
+          </div>
+          <div style="
+            padding: 10rem;
+            gap: 5rem;
+            display: flex;
+            flex-direction: column;"
+          >
+            <div style="
+              display: flex;
+              align-items: center;
+              background: rgba(0, 170, 255, 0.15);
+              height: 32rem;
+              font-size: 16rem;
+              font-weight: 400;
+              padding-left: 10rem;
+            ">设备点位：id55124</div>
+            <div style="
+              display: flex;
+              align-items: center;
+              background: rgba(0, 170, 255, 0.15);
+              height: 32rem;
+              font-size: 16rem;
+              font-weight: 400;
+              padding-left: 10rem;
+            ">设备名称：红绿灯摄像头</div>
+            <div style="
+              display: flex;
+              align-items: center;
+              background: rgba(0, 170, 255, 0.15);
+              height: 32rem;
+              font-size: 16rem;
+              font-weight: 400;
+              padding-left: 10rem;
+            ">设备编号：abc22233</div>
+            <div style="
+              display: flex;
+              align-items: center;
+              background: rgba(0, 170, 255, 0.15);
+              height: 32rem;
+              font-size: 16rem;
+              font-weight: 400;
+              padding-left: 10rem;
+            ">所属大队：浙江交警大队</div>
+          </div>
+      `
+      div.innerHTML = domString
+      return div
+    },
   },
   created() {
     this.getTime()
@@ -154,6 +320,7 @@ export default {
   },
   mounted() {
     this.computedREM()
+    this.initMap()
   },
 }
 </script>
@@ -341,6 +508,14 @@ export default {
         }
       }
     }
+  }
+  #container {
+    position: absolute;
+    left: 50%;
+    top: 54%;
+    transform: translate(-50%, -50%);
+    width: 1050rem;
+    height: 673rem;
   }
 }
 </style>

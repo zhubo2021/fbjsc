@@ -23,6 +23,8 @@ module.exports = {
   parserOptions: {
     sourceType: "module",
   },
-
+  globals: {
+    BMap: true,
+  },
   plugins: ["vue"],
 }

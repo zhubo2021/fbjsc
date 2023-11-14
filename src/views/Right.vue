@@ -867,7 +867,7 @@ export default {
           formatter: function (params, ticket, callback) {
             // const item = params[0]
             let item = res.find((e, i) => i == params[0].dataIndex)
-            console.log("params", params, params.dataIndex, item)
+            // console.log("params", params, params.dataIndex, item)
             let bg = require("@/assets/fbjsc/tankuang_head.png")
             let dom = `
             <div
@@ -921,7 +921,7 @@ export default {
                 <div
                   style="display: flex;
                   align-items: center;
-                  background: rgba(0, 170, 255, 0.3);
+                  background: rgba(253, 231, 1, 0.3);
                   height: 32rem;
                   font-size: 16rem;
                   font-weight: 400;
