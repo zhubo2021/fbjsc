@@ -105,10 +105,13 @@ import Right from "./views/Right"
 import TopKanban from "./views/TopKanban"
 import BottomKanban from "./views/BottomKanban"
 import axios from "@/axios.js"
+import styleCss from "./custom_map_config.json"
+
 let apiUrl = "https://cube.yucekj.com/api/cubeMockApi/getContent?bizCode="
 if (process.env.NODE_ENV == "production") {
   apiUrl = "/api/cubeMockApi/getContent?bizCode="
 }
+
 var map = null
 var customOverlay = null
 let point1 = [121.71839041988835, 29.843869487183433]
@@ -169,6 +172,21 @@ export default {
       var point = new BMap.Point(121.71839041988835, 29.843869487183433)
       map.centerAndZoom(point, 13)
       map.enableScrollWheelZoom() // 启动滚轮
+      /* map.setMapStyle({  
+        style: "dark", // 深色主题样式  
+        highlightStyle: {  
+          color: "#fff", // 高亮颜色为红色  
+          lineColor: "#fff", // 线条颜色为蓝色  
+          fillColor: "#fff" // 填充颜色为灰色  
+        },  
+        shadowStyle: {  
+          color: "#fff", // 阴影颜色为黑色  
+          width: "10px", // 阴影宽度为10像素  
+          blur: "5px" // 阴影模糊级别为5像素  
+        }  
+      }); */
+      map.setMapStyleV2({ styleJson: styleCss })
+
       this.setPoint()
       // setPoint2()
       map.addEventListener("click", function (event) {
