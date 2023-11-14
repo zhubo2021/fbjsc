@@ -921,12 +921,12 @@ export default {
                 <div
                   style="display: flex;
                   align-items: center;
-                  background: rgba(253, 231, 1, 0.3);
+                  background: rgba(0, 170, 255, 0.3);
                   height: 32rem;
                   font-size: 16rem;
                   font-weight: 400;
                   padding-left: 10rem;">
-                  <span style="display: inline-block; width:8rem;height:8rem;border-radius:8rem;background:rgba(20, 210, 62, 1);margin-right:10rem;"></span>
+                  <span style="display: inline-block; width:8rem;height:8rem;border-radius:8rem;background:rgba(253, 231, 1, 1);margin-right:10rem;"></span>
                   录入率：${parseInt(item.lrl * 100) + "%"}</div>
               </div>
             </div>
