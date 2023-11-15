@@ -113,10 +113,13 @@ if (process.env.NODE_ENV == "production") {
   apiUrl = "/api/cubeMockApi/getContent?bizCode="
 }
 
-var map = null
+var _map = null
 var customOverlay = null
-let point1 = [121.71839041988835, 29.843869487183433]
+// let _centerPoint = [121.71839041988835, 29.843869487183433]
+let _centerPoint = [122.154, 29.991]
 let point2 = []
+
+let ComplexCustomOverlay
 
 export default {
   components: { Left, Right, TopKanban, BottomKanban },
@@ -132,7 +135,8 @@ export default {
       return axios.get(apiUrl + path)
     },
     pageTo() {
-      window.open("https://www.baidu.com")
+      window.open("https://41.248.129.75/#/analyze/F1aAvZ1MTP/report-edit/vIKmkNk6Ne")
+      // _map.clearOverlays()
     },
     computedREM() {
       let change = () => {
@@ -167,86 +171,85 @@ export default {
     },
     init() {
       let self = this
-      // console.log("init")
-      map = new BMap.Map("container")
-      // console.log("map", map)
-      var point = new BMap.Point(121.71839041988835, 29.843869487183433)
-      map.centerAndZoom(point, 13)
-      map.enableScrollWheelZoom() // 启动滚轮
-      /* map.setMapStyle({  
-        style: "dark", // 深色主题样式  
-        highlightStyle: {  
-          color: "#fff", // 高亮颜色为红色  
-          lineColor: "#fff", // 线条颜色为蓝色  
-          fillColor: "#fff" // 填充颜色为灰色  
-        },  
-        shadowStyle: {  
-          color: "#fff", // 阴影颜色为黑色  
-          width: "10px", // 阴影宽度为10像素  
-          blur: "5px" // 阴影模糊级别为5像素  
-        }  
-      }); */
-      map.setMapStyleV2({ styleJson: styleCss })
-
-      this.setPoint()
-      // setPoint2()
-      map.addEventListener("click", function (event) {
+      _map = new BMap.Map("container")
+      let point = new BMap.Point(..._centerPoint)
+      _map.centerAndZoom(point, 13)
+      _map.enableScrollWheelZoom()
+      _map.setMapStyleV2({ styleJson: styleCss })
+      _map.addEventListener("click", function (event) {
+        // console.log(event)
         if (!event.overlay) {
           this.removeOverlay(customOverlay)
-          // customOverlay = null
+        }
+        if (event?.overlay?.customData) {
+          this.removeOverlay(customOverlay)
+          let item = event.overlay.customData
+          customOverlay = new ComplexCustomOverlay(new BMap.Point(item.jd, item.wd), item)
+          _map.addOverlay(customOverlay)
         }
       })
-      function ComplexCustomOverlay(point) {
-        self._point = point
+
+      ComplexCustomOverlay = function (point, item) {
+        this._point = point
+        this._item = item
       }
       ComplexCustomOverlay.prototype = new BMap.Overlay()
-      ComplexCustomOverlay.prototype.initialize = map => {
+      ComplexCustomOverlay.prototype.initialize = function (map) {
         this._map = map
-        this._div = this.createDOM()
+        this._div = self.createDOM(this._item)
         map.getPanes().labelPane.appendChild(this._div)
-
         return this._div
       }
-
-      ComplexCustomOverlay.prototype.draw = () => {
-        var pixel = this._map.pointToOverlayPixel(self._point)
-        console.log("drawdrawdrawdraw", pixel)
-        // console.log("pixel", pixel, this._div, self._point)
+      ComplexCustomOverlay.prototype.draw = function () {
+        let pixel = this._map.pointToOverlayPixel(this._point)
+        // console.log("drawdrawdrawdraw", pixel)
         this._div.style.left = pixel.x + 10 + "px"
         this._div.style.top = pixel.y + 10 + "px"
-        console.log(this._div.style.left)
+        // console.log(this._div.style.left)
       }
-      customOverlay = new ComplexCustomOverlay(new BMap.Point(121.71839041988835, 29.843869487183433))
-      // map.addOverlay(customOverlay)
+      // customOverlay = new ComplexCustomOverlay(new BMap.Point(..._centerPoint))
+      this.setPoint()
     },
-    setPoint() {
-      let point = new BMap.Point(121.71839041988835, 29.843869487183433)
-      let bigSize = new BMap.Size(50, 38)
-      let img = require("@/assets/fbjsc/point1.png")
-      let icon = new BMap.Icon(img, bigSize)
-      let marker = new BMap.Marker(point, { icon })
-      map.addOverlay(marker)
-      marker.addEventListener("click", function () {
-        // alert("您点击了标注")
-        // console.log("marker_click")
-        map.addOverlay(customOverlay)
-        /* if (!customOverlay) {
-          setPoint2()
-        } */
+    async setPoint() {
+      _map.clearOverlays()
+      let res = await this.axiosRquest("zs_acd_area_map_ol")
+      // console.log("事故撒点", res)
+      let res2 = await this.axiosRquest("zs_equip_map_ol")
+      // console.log("设备撒点", new Set(res2.map(e => e.ztmc)))
+      let accidentIcon = require("@/assets/fbjsc/point_warning.png")
+      let facilityIcon1 = require("@/assets/fbjsc/point1.png")
+      let facilityIcon2 = require("@/assets/fbjsc/point2.png")
+      let facilityIcon3 = require("@/assets/fbjsc/point3.png")
+      let facilityIcon4 = require("@/assets/fbjsc/point4.png")
+      let facilityIcon5 = require("@/assets/fbjsc/point5.png")
+      let accidentIconSize = new BMap.Size(30, 34)
+      let facilityIconSize = new BMap.Size(50, 38)
+      res.forEach(e => {
+        if (e.jd && e.wd) {
+          let point = new BMap.Point(e.jd, e.wd)
+          let icon = new BMap.Icon(accidentIcon, accidentIconSize)
+          let marker = new BMap.Marker(point, { icon })
+          marker.customData = { type: "accident", ...e }
+          // console.log("marker", marker)
+          _map.addOverlay(marker)
+        }
       })
-    },
-    setPoint2() {
-      customOverlay = new BMap.CustomOverlay(this.createDOM, {
-        point: new BMap.Point(121.71839041988835, 29.843869487183433),
-        offsetY: -60,
-        map,
+      res2.forEach(e => {
+        if (e.jd && e.wd) {
+          let point = new BMap.Point(e.jd, e.wd)
+          let icon = new BMap.Icon(facilityIcon1, facilityIconSize)
+          let marker = new BMap.Marker(point, { icon })
+          marker.customData = { type: "facility", ...e }
+          _map.addOverlay(marker)
+        }
       })
-      // console.log("customOverlay", customOverlay)
-      map.addOverlay(customOverlay)
+      /*  marker.addEventListener("click", function () {
+        _map.addOverlay(customOverlay)
+      }) */
     },
-    createDOM() {
+    createDOM(item) {
       let img = require("@/assets/fbjsc/tankuang_head.png")
-      var div = document.createElement("div")
+      let div = document.createElement("div")
       div.style.position = "absolute"
       div.style.left = "0"
       div.style.top = "0"
@@ -258,9 +261,10 @@ export default {
       div.style.backgroundColor = "rgba(8, 12, 23, 0.78)"
       div.style.width = "339rem"
       div.style.color = "#fff"
-      div.style.borderBottom = "2rem solid #00a2ff;"
-
-      let domString = `
+      div.style.borderBottom = "2rem solid #00a2ff"
+      let domString
+      if (item.type == "accident") {
+        domString = `
           <div style="
             display: flex;
             align-items: center;
@@ -271,21 +275,7 @@ export default {
             font-size: 18rem;
             font-weight: 600;
           ">
-            <span>海南大道C线违法抓拍</span>
-            <span class="status"
-              style="
-                display: flex;
-                align-items: center;
-                justify-content: center;
-              "
-            ><span style="
-                background:#8D9293; 
-                margin-right: 10rem;
-                display: inline-block;
-                width: 7rem;
-                height: 7rem;
-                border-radius: 7rem;"
-              ></span>停用</span>
+            <span>警情事故</span>
           </div>
           <div style="
             padding: 10rem;
@@ -301,7 +291,7 @@ export default {
               font-size: 16rem;
               font-weight: 400;
               padding-left: 10rem;
-            ">设备点位：id55124</div>
+            ">事故地址：${item.sgdz}</div>
             <div style="
               display: flex;
               align-items: center;
@@ -310,7 +300,7 @@ export default {
               font-size: 16rem;
               font-weight: 400;
               padding-left: 10rem;
-            ">设备名称：红绿灯摄像头</div>
+            ">事故时间：${item.sgsj.replace("T", " ")}</div>
             <div style="
               display: flex;
               align-items: center;
@@ -319,18 +309,83 @@ export default {
               font-size: 16rem;
               font-weight: 400;
               padding-left: 10rem;
-            ">设备编号：abc22233</div>
-            <div style="
-              display: flex;
-              align-items: center;
-              background: rgba(0, 170, 255, 0.15);
-              height: 32rem;
-              font-size: 16rem;
-              font-weight: 400;
-              padding-left: 10rem;
-            ">所属大队：浙江交警大队</div>
+            ">事故当事人：${item.sgdsr}</div>
           </div>
       `
+      } else {
+        domString = `
+          <div style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-left: 25rem;
+            padding-right: 10rem;
+            height: 49rem;
+            font-size: 18rem;
+            font-weight: 600;
+          ">
+            <span>${item.sbdw}</span>
+            <span class="status"
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex: 0 0 56rem;
+              "
+            ><span style="
+                background:#8D9293;
+                margin-right: 10rem;
+                display: inline-block;
+                width: 7rem;
+                height: 7rem;
+                border-radius: 7rem;"
+              ></span>${item.ztmc}</span>
+          </div>
+          <div style="
+            padding: 10rem;
+            gap: 5rem;
+            display: flex;
+            flex-direction: column;"
+          >
+            <div style="
+              display: flex;
+              align-items: center;
+              background: rgba(0, 170, 255, 0.15);
+              height: 32rem;
+              font-size: 16rem;
+              font-weight: 400;
+              padding-left: 10rem;
+            ">设备点位：${item.sbdw}</div>
+            <div style="
+              display: flex;
+              align-items: center;
+              background: rgba(0, 170, 255, 0.15);
+              height: 32rem;
+              font-size: 16rem;
+              font-weight: 400;
+              padding-left: 10rem;
+            ">设备名称：${item.sbmc}</div>
+            <div style="
+              display: flex;
+              align-items: center;
+              background: rgba(0, 170, 255, 0.15);
+              height: 32rem;
+              font-size: 16rem;
+              font-weight: 400;
+              padding-left: 10rem;
+            ">设备编号：${item.sbbh}</div>
+            <div style="
+              display: flex;
+              align-items: center;
+              background: rgba(0, 170, 255, 0.15);
+              height: 32rem;
+              font-size: 16rem;
+              font-weight: 400;
+              padding-left: 10rem;
+            ">所属大队：${item.ssdd}</div>
+          </div>
+      `
+      }
       div.innerHTML = domString
       return div
     },
@@ -338,6 +393,11 @@ export default {
   created() {
     this.getTime()
     this.getKanbanData()
+    setInterval(() => {
+      this.getKanbanData()
+      this.setPoint()
+      console.log("app_setInterval")
+    }, 60000 * 5)
   },
   mounted() {
     this.computedREM()

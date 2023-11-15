@@ -905,6 +905,12 @@ export default {
       this.getChart2()
     })
     this.getCarData()
+    setInterval(() => {
+      this.getChart1()
+      this.getChart2()
+      this.getCarData()
+      console.log('left_setInterval');
+    }, 60000 * 5)
   },
   mounted() {
     let change = () => {
@@ -923,9 +929,9 @@ export default {
 <style lang="less">
 .left_bar {
   position: absolute;
-  left: 44rem;
+  left: 0;
   top: 115rem;
-  background: rgba(16,27,58,0.9);
+  background: rgba(16, 27, 58, 0.9);
   padding: 20rem;
   .left_one_container {
     .left_one_chart {

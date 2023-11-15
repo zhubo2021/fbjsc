@@ -36,7 +36,7 @@
       <div class="top_title">
         <span class="title_label">工作量分布情况</span>
         <div class="sort_btns">
-          <div :class="{ normal_btn: true, active_btn: filterType == '1' }" @click="sortChange('filterType', '1')">全部</div>
+          <div :class="{ normal_btn: true, active_btn: filterType == '1' }" @click="sortChange('filterType', '1')">总览</div>
           <div :class="{ normal_btn: true, active_btn: filterType == '2' }" @click="sortChange('filterType', '2')">核对数</div>
           <div :class="{ normal_btn: true, active_btn: filterType == '3' }" @click="sortChange('filterType', '3')">录入数</div>
           <div :class="{ normal_btn: true, active_btn: filterType == '4' }" @click="sortChange('filterType', '4')">录入率</div>
@@ -46,10 +46,13 @@
         <!-- <div class="filter_item filter_active">违法录入总数：{{ threeChartNum[0] }}</div>
         <div class="filter_item">违法核对总数：{{ threeChartNum[1] }}</div> -->
         <div class="filter_item">
-          违法录入总数：<span>{{ formatter(threeChartNum[0]) }}</span>
+          录入数：<span>{{ formatter(threeChartNum[0]) }}</span>
         </div>
         <div class="filter_item">
-          违法核对总数：<span>{{ formatter(threeChartNum[1]) }}</span>
+          核对数：<span>{{ formatter(threeChartNum[1]) }}</span>
+        </div>
+        <div class="filter_item">
+          录入率：<span>{{ threeChartNum[2] }}</span>
         </div>
       </div>
       <div class="right_three_chart"></div>
@@ -70,7 +73,7 @@ export default {
     return {
       sortType: "1",
       filterType: "1",
-      threeChartNum: [0, 0],
+      threeChartNum: [0, 0, 0],
       threeDdata: [
         /*  { name: "普陀区管委", percent: "20%", count: "123.54", color: "#00A2FF" },
         { name: "普陀区", percent: "20%", count: "123.54", color: "#FC2626" },
@@ -777,7 +780,7 @@ export default {
       let res = await this.axiosRquest("zs_vio_handle_time_ol")
       let res2 = await this.axiosRquest("zs_vio_handle_total_ol")
       // console.log("getChart5", res, res2)
-      this.threeChartNum = [res2[0].lrzs, res2[0].hdzs]
+      this.threeChartNum = [res2[0].lrzs, res2[0].hdzs, parseInt(res2[0].lrl * 100) + "%"]
 
       let xaxisData = res.map(e => e.sxr || "-")
       let yaxisData = res.map(e => e.hds || 0)
@@ -864,11 +867,21 @@ export default {
           borderRadius: 0,
           padding: 0,
           position: ["-80%", "0%"],
-          formatter: function (params, ticket, callback) {
+          formatter: params => {
             // const item = params[0]
             let item = res.find((e, i) => i == params[0].dataIndex)
             // console.log("params", params, params.dataIndex, item)
             let bg = require("@/assets/fbjsc/tankuang_head.png")
+            let total
+            if (this.filterType == "1") {
+              total = item.hds + item.lrs
+            } else if (this.filterType == "2") {
+              total = item.hds
+            } else if (this.filterType == "3") {
+              total = item.lrs
+            } else {
+              total = parseInt(item.lrl * 100) + "%"
+            }
             let dom = `
             <div
               style="
@@ -888,7 +901,7 @@ export default {
               >
                 <span>${item.sxr}</span>
                 <span style="">
-                  ${item.hds + item.lrs}
+                  ${total}
                 </span>
               </div>
               <div
@@ -1296,6 +1309,12 @@ export default {
       this.getChart4()
       this.getChart5()
     })
+    setInterval(() => {
+      this.get3Dpie()
+      this.getChart4()
+      this.getChart5()
+      console.log('right_setInterval');
+    }, 60000 * 5)
   },
   mounted() {
     let change = () => {
@@ -1315,10 +1334,10 @@ export default {
 <style lang="less">
 .right_bar {
   position: absolute;
-  right: 44rem;
+  right: 0;
   top: 115rem;
   padding: 20rem;
-  background: rgba(16,27,58,0.9);
+  background: rgba(16, 27, 58, 0.9);
   .right_one_container {
     .pie_container {
       height: 250rem;
@@ -1401,13 +1420,13 @@ export default {
       align-items: center;
       justify-content: center;
       margin: 20rem 10rem;
-      gap: 15rem;
+      gap: 20rem;
       .filter_item {
         // cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 200rem;
+        // width: 200rem;
         height: 40rem;
         color: #00a3ff;
         font-size: 16rem;
