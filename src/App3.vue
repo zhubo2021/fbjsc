@@ -209,9 +209,11 @@ export default {
 
       ComplexCustomOverlay.prototype.draw = () => {
         var pixel = this._map.pointToOverlayPixel(self._point)
+        console.log("drawdrawdrawdraw",pixel)
         // console.log("pixel", pixel, this._div, self._point)
-        this._div.style.left = pixel.x - 100 + "rem"
-        this._div.style.top = pixel.y - 200 + "rem"
+        this._div.style.left = pixel.x + 10  + "px"
+        this._div.style.top = pixel.y + 10 + "px"
+        console.log(this._div.style.left)
       }
       customOverlay = new ComplexCustomOverlay(new BMap.Point(121.71839041988835, 29.843869487183433))
       // map.addOverlay(customOverlay)
@@ -530,10 +532,10 @@ export default {
   #container {
     position: absolute;
     left: 50%;
-    top: 54%;
-    transform: translate(-50%, -50%);
-    width: 1050rem;
-    height: 673rem;
+    top: 100rem;
+    transform: translateX(-50%);
+    width: 100vw;
+    height: 973rem;
   }
 }
 </style>

@@ -78,11 +78,11 @@ export default {
       sortThree: "1",
       selectThree: "0",
       cardThree: [
-        { xh: 0, sm_cnt: 100, xzqhmc: "全部1" },
+        /* { xh: 0, sm_cnt: 100, xzqhmc: "全部1" },
         { xh: 1, sm_cnt: 100, xzqhmc: "全部2" },
         { xh: 2, sm_cnt: 100, xzqhmc: "全部3" },
         { xh: 3, sm_cnt: 100, xzqhmc: "全部4" },
-        { xh: 4, sm_cnt: 100, xzqhmc: "全部5" },
+        { xh: 4, sm_cnt: 100, xzqhmc: "全部5" }, */
       ],
       currentCard: {},
       carList: [
@@ -121,7 +121,7 @@ export default {
       return result
     },
     cardChange(v) {
-      console.log(v)
+      // console.log(v)
       this.currentCard = v
     },
     async getCarData() {
@@ -925,7 +925,7 @@ export default {
   position: absolute;
   left: 44rem;
   top: 115rem;
-
+  background: rgba(16,27,58,0.9);
   .left_one_container {
     .left_one_chart {
       margin-top: 20rem;
