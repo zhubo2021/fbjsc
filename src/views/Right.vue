@@ -1317,6 +1317,7 @@ export default {
   position: absolute;
   right: 44rem;
   top: 115rem;
+  padding: 20rem;
   background: rgba(16,27,58,0.9);
   .right_one_container {
     .pie_container {

@@ -130,6 +130,8 @@ export default {
   justify-content: space-between;
   gap: 30rem;
   // border: 1px solid #fff;
+  padding: 20rem;
+  background: rgba(16,27,58,0.5);
 
   .card_kanban {
     background: url(~@/assets/fbjsc/icon.png) left center/contain no-repeat;

@@ -926,6 +926,7 @@ export default {
   left: 44rem;
   top: 115rem;
   background: rgba(16,27,58,0.9);
+  padding: 20rem;
   .left_one_container {
     .left_one_chart {
       margin-top: 20rem;
@@ -998,10 +999,9 @@ export default {
       margin: 20rem 0;
       .tab_item {
         cursor: pointer;
-        padding-right: 7rem;
-        width: 91rem;
+        width: 88rem;
         height: 40rem;
-        background: url(~@/assets/fbjsc/tab_nor.png) center/cover no-repeat;
+        background: url(~@/assets/fbjsc/tab_nor.png) center/102% no-repeat;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -1018,7 +1018,7 @@ export default {
       }
       .tab_sel {
         color: #fff;
-        background: url(~@/assets/fbjsc/tab_sel.png) center/cover no-repeat;
+        background: url(~@/assets/fbjsc/tab_sel.png) center/102% no-repeat;
       }
     }
     .left_three_chart {

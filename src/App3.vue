@@ -96,6 +96,7 @@
     <Right />
     <TopKanban :dataList="dataList" />
     <BottomKanban :dataList="dataList" />
+    <div class="Footers_img"></div>
   </div>
 </template>
 <script>
@@ -209,9 +210,9 @@ export default {
 
       ComplexCustomOverlay.prototype.draw = () => {
         var pixel = this._map.pointToOverlayPixel(self._point)
-        console.log("drawdrawdrawdraw",pixel)
+        console.log("drawdrawdrawdraw", pixel)
         // console.log("pixel", pixel, this._div, self._point)
-        this._div.style.left = pixel.x + 10  + "px"
+        this._div.style.left = pixel.x + 10 + "px"
         this._div.style.top = pixel.y + 10 + "px"
         console.log(this._div.style.left)
       }
@@ -354,15 +355,19 @@ export default {
   color: #fff;
   position: relative;
   font-size: 16rem;
-  background: url(~@/assets/fbjsc/Header.png) center 30rem / contain no-repeat, url(~@/assets/fbjsc/Footers.png) bottom/contain no-repeat,
-    url(~@/assets/fbjsc/bg.png) center/cover no-repeat, #000;
-
+  background:  url(~@/assets/fbjsc/Footers.png) bottom/contain no-repeat, #000;
   .head_bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 95rem;
+    z-index: 2;
+    height: 113rem;
     padding: 0 32rem;
+    background: url(~@/assets/fbjsc/Header.png) center 30rem / contain no-repeat;
     .now_date {
       font-size: 26rem;
       padding-bottom: 15rem;
@@ -372,7 +377,7 @@ export default {
       font-size: 44rem;
       color: #bde6ff;
       padding-right: 206rem;
-      padding-top: 20rem;
+      // padding-top: 20rem;
     }
     .search_btn {
       width: 168rem;
@@ -535,7 +540,17 @@ export default {
     top: 100rem;
     transform: translateX(-50%);
     width: 100vw;
-    height: 973rem;
+    height: 978rem;
+  }
+  .Footers_img {
+    position: absolute;
+    z-index: 2;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 80rem;
+    width: 100vw;
+    background: url(~@/assets/fbjsc/Footers.png) bottom/contain no-repeat;
   }
 }
 </style>
