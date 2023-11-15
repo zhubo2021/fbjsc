@@ -355,7 +355,8 @@ export default {
   color: #fff;
   position: relative;
   font-size: 16rem;
-  background:  url(~@/assets/fbjsc/Footers.png) bottom/contain no-repeat, #000;
+  // background: #000;
+  background: url(~@/assets/fbjsc/bg.png) center/cover no-repeat, #000;
   .head_bar {
     position: absolute;
     top: 0;
@@ -370,7 +371,7 @@ export default {
     background: url(~@/assets/fbjsc/Header.png) center 30rem / contain no-repeat;
     .now_date {
       font-size: 26rem;
-      padding-bottom: 15rem;
+      // padding-bottom: 15rem;
     }
     .head_label {
       font-family: DingTalk JinBuTi;
@@ -384,7 +385,7 @@ export default {
       height: 50rem;
       background: url(~@/assets/fbjsc/btn.png) center/cover no-repeat;
       font-size: 26rem;
-      margin-bottom: 15rem;
+      // margin-bottom: 15rem;
       display: flex;
       align-items: center;
       justify-content: center;
