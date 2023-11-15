@@ -535,12 +535,8 @@ export default {
     }
   }
   #container {
-    position: absolute;
-    left: 50%;
-    top: 100rem;
-    transform: translateX(-50%);
-    width: 100vw;
-    height: 978rem;
+    width: 100%;
+    height: 100%;
   }
   .Footers_img {
     position: absolute;
