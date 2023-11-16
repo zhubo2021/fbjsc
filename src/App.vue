@@ -115,7 +115,7 @@ if (process.env.NODE_ENV == "production") {
 
 var _map = null
 var customOverlay = null
-// let _centerPoint = [121.71839041988835, 29.843869487183433]
+// let _centerPoint = [122.32101, 29.972687]
 let _centerPoint = [122.154, 29.991]
 let point2 = []
 
@@ -215,13 +215,13 @@ export default {
       let res = await this.axiosRquest("zs_acd_area_map_ol")
       // console.log("事故撒点", res)
       let res2 = await this.axiosRquest("zs_equip_map_ol")
-      // console.log("设备撒点", new Set(res2.map(e => e.ztmc)))
+      console.log("设备撒点", new Set(res2.map(e => e.ztmc)))
       let accidentIcon = require("@/assets/fbjsc/point_warning.png")
-      let facilityIcon1 = require("@/assets/fbjsc/point1.png")
-      let facilityIcon2 = require("@/assets/fbjsc/point2.png")
+      let facilityIcon1 = require("@/assets/fbjsc/point1.png") // 作废
+      let facilityIcon2 = require("@/assets/fbjsc/point2.png") // 停用
       let facilityIcon3 = require("@/assets/fbjsc/point3.png")
       let facilityIcon4 = require("@/assets/fbjsc/point4.png")
-      let facilityIcon5 = require("@/assets/fbjsc/point5.png")
+      let facilityIcon5 = require("@/assets/fbjsc/point5.png") // 正常
       let accidentIconSize = new BMap.Size(30, 34)
       let facilityIconSize = new BMap.Size(50, 38)
       res.forEach(e => {
@@ -236,8 +236,9 @@ export default {
       })
       res2.forEach(e => {
         if (e.jd && e.wd) {
+          let iconImg = e.ztmc == "作废" ? facilityIcon1 : e.ztmc == "停用" ? facilityIcon2 : facilityIcon5
           let point = new BMap.Point(e.jd, e.wd)
-          let icon = new BMap.Icon(facilityIcon1, facilityIconSize)
+          let icon = new BMap.Icon(iconImg, facilityIconSize)
           let marker = new BMap.Marker(point, { icon })
           marker.customData = { type: "facility", ...e }
           _map.addOverlay(marker)
@@ -333,7 +334,7 @@ export default {
                 flex: 0 0 56rem;
               "
             ><span style="
-                background:#8D9293;
+                background:${item.ztmc == "作废" ? "#FC2626" : item.ztmc == "停用" ? "#8D9293" : "#14D23E"};
                 margin-right: 10rem;
                 display: inline-block;
                 width: 7rem;
