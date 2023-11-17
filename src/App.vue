@@ -164,10 +164,17 @@ export default {
       window.init = () => {
         this.init()
       }
+      window.AUTHENTIC_AK = "USER_AK";
       let script = document.createElement("script")
       script.type = "text/javascript"
-      script.src = `//api.map.baidu.com/api?v=3.0&ak=GAp7ANvstQXFo9sBF4TO772lvNPzz7ib&callback=init`
+      script.onload = ()=>{
+        setTimeout(()=>{
+          this.init();
+        },500)
+      }
+      script.src = `http://41.248.128.188:8119/baidumap/jsapi/api.js`
       document.body.appendChild(script)
+      
     },
     init() {
       let self = this
@@ -175,7 +182,9 @@ export default {
       let point = new BMap.Point(..._centerPoint)
       _map.centerAndZoom(point, 13)
       _map.enableScrollWheelZoom()
-      _map.setMapStyleV2({ styleJson: styleCss })
+      _map.setMapStyle({
+        style: 'midnight'
+      })
       _map.addEventListener("click", function (event) {
         // console.log(event)
         if (!event.overlay) {
