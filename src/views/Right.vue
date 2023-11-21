@@ -123,7 +123,7 @@ export default {
       let data = res.map((e, i) => {
         return {
           name: e.xzqh,
-          value: e.sgzb * 100,
+          value: parseInt(e.sgzb * 100),
           itemStyle: {
             color: colorList[i],
           },
