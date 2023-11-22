@@ -226,10 +226,10 @@ export default {
       let res2 = await this.axiosRquest("zs_equip_map_ol")
       console.log("设备撒点", new Set(res2.map(e => e.ztmc)))
       let accidentIcon = require("@/assets/fbjsc/point_warning.png")
-      let facilityIcon1 = require("@/assets/fbjsc/point1.png") // 作废
-      let facilityIcon2 = require("@/assets/fbjsc/point2.png") // 停用
-      let facilityIcon3 = require("@/assets/fbjsc/point3.png")
-      let facilityIcon4 = require("@/assets/fbjsc/point4.png")
+      let facilityIcon1 = require("@/assets/fbjsc/point1.png") // 停用
+      // let facilityIcon2 = require("@/assets/fbjsc/point2.png") 
+      // let facilityIcon3 = require("@/assets/fbjsc/point3.png")
+      // let facilityIcon4 = require("@/assets/fbjsc/point4.png")
       let facilityIcon5 = require("@/assets/fbjsc/point5.png") // 正常
       let accidentIconSize = new BMap.Size(30, 34)
       let facilityIconSize = new BMap.Size(50, 38)
