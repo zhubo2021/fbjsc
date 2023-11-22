@@ -14,8 +14,8 @@
       </div>
       <div class="percent_num">
         环比昨日
-        <span v-if="item.lastWeek == 0" class="orange-num">持平</span>
-        <span v-else :class="item.lastDay < 0 ? 'blue-num' : 'red-num'">{{ item.lastDay < 0 ? item.lastDay : "+" + item.lastDay }}%</span>
+        <span v-if="item.lastDay == 0" class="orange-num">持平</span>
+        <span v-else :class="item.lastDay < 0 ? 'blue-num' : 'red-num'">{{ item.lastDay < 0 ? item.lastDay : "+" + item.lastDay }}{{ [1, 3].includes(i) ? "%" : "" }}</span>
       </div>
     </div>
   </div>
@@ -85,7 +85,7 @@ export default {
               name: "审验数",
               num: newVal.find(e => e.tag == 5).cnt,
               lastWeek: parseInt(newVal.find(e => e.tag == 5).ztb * 100),
-              lastDay: parseInt(newVal.find(e => e.tag == 5).rhb * 100),
+              lastDay: newVal.find(e => e.tag == 5).rhb,
             },
             {
               name: "审验率",
@@ -97,7 +97,7 @@ export default {
               name: "录入数",
               num: newVal.find(e => e.tag == 7).cnt,
               lastWeek: parseInt(newVal.find(e => e.tag == 7).ztb * 100),
-              lastDay: parseInt(newVal.find(e => e.tag == 7).rhb * 100),
+              lastDay: newVal.find(e => e.tag == 7).rhb,
             },
             {
               name: "录入率",
@@ -137,7 +137,7 @@ export default {
   gap: 30rem;
   // border: 1px solid #fff;
   padding: 20rem;
-  background: rgba(16,27,58,0.5);
+  background: rgba(16, 27, 58, 0.5);
 
   .card_kanban {
     background: url(~@/assets/fbjsc/icon.png) left center/contain no-repeat;

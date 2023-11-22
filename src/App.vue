@@ -233,7 +233,7 @@ export default {
       let facilityIcon5 = require("@/assets/fbjsc/point5.png") // 正常
       let accidentIconSize = new BMap.Size(30, 34)
       let facilityIconSize = new BMap.Size(50, 38)
-      res.forEach(e => {
+     /*  res.forEach(e => {
         if (e.jd && e.wd) {
           let point = new BMap.Point(e.jd, e.wd)
           let icon = new BMap.Icon(accidentIcon, accidentIconSize)
@@ -242,10 +242,11 @@ export default {
           // console.log("marker", marker)
           _map.addOverlay(marker)
         }
-      })
+      }) */
       res2.forEach(e => {
         if (e.jd && e.wd) {
-          let iconImg = e.ztmc == "作废" ? facilityIcon1 : e.ztmc == "停用" ? facilityIcon2 : facilityIcon5
+          // let iconImg = e.ztmc == "作废" ? facilityIcon1 : e.ztmc == "停用" ? facilityIcon2 : facilityIcon5
+          let iconImg = e.ztmc == "停用" ? facilityIcon1 : facilityIcon5
           let point = new BMap.Point(e.jd, e.wd)
           let icon = new BMap.Icon(iconImg, facilityIconSize)
           let marker = new BMap.Marker(point, { icon })
@@ -343,7 +344,7 @@ export default {
                 flex: 0 0 56rem;
               "
             ><span style="
-                background:${item.ztmc == "作废" ? "#FC2626" : item.ztmc == "停用" ? "#8D9293" : "#14D23E"};
+                background:${item.ztmc == "停用" ? "#FC2626" : "#14D23E"};
                 margin-right: 10rem;
                 display: inline-block;
                 width: 7rem;

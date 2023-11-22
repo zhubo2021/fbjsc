@@ -39,20 +39,20 @@
           <div :class="{ normal_btn: true, active_btn: filterType == '1' }" @click="sortChange('filterType', '1')">总览</div>
           <div :class="{ normal_btn: true, active_btn: filterType == '2' }" @click="sortChange('filterType', '2')">核对数</div>
           <div :class="{ normal_btn: true, active_btn: filterType == '3' }" @click="sortChange('filterType', '3')">录入数</div>
-          <div :class="{ normal_btn: true, active_btn: filterType == '4' }" @click="sortChange('filterType', '4')">录入率</div>
+          <div :class="{ normal_btn: true, active_btn: filterType == '4' }" @click="sortChange('filterType', '4')">核录率</div>
         </div>
       </div>
       <div class="filter_bts">
         <!-- <div class="filter_item filter_active">违法录入总数：{{ threeChartNum[0] }}</div>
         <div class="filter_item">违法核对总数：{{ threeChartNum[1] }}</div> -->
         <div class="filter_item">
-          录入数：<span>{{ formatter(threeChartNum[0]) }}</span>
-        </div>
-        <div class="filter_item">
           核对数：<span>{{ formatter(threeChartNum[1]) }}</span>
         </div>
         <div class="filter_item">
-          录入率：<span>{{ threeChartNum[2] }}</span>
+          录入数：<span>{{ formatter(threeChartNum[0]) }}</span>
+        </div>
+        <div class="filter_item">
+          核录率：<span>{{ threeChartNum[2] }}</span>
         </div>
       </div>
       <div class="right_three_chart"></div>
@@ -101,6 +101,11 @@ export default {
         this.getChart4()
       }
       if (chartType == "filterType") {
+        let sortFlag = this.filterType == "1" ? "hdzs_rk" : this.filterType == "2" ? "hds_rk" : this.filterType == "3" ? "lrs_rk" : "lrl_rk"
+        let xaxisData = this._chart5Data.sort((a, b) => a[sortFlag] - b[sortFlag]).map(e => e.sxr || "-")
+        let yaxisData = this._chart5Data.sort((a, b) => a[sortFlag] - b[sortFlag]).map(e => e.hds || 0)
+        let yaxisData2 = this._chart5Data.sort((a, b) => a[sortFlag] - b[sortFlag]).map(e => e.lrs || 0)
+        let yaxisData4 = this._chart5Data.sort((a, b) => a[sortFlag] - b[sortFlag]).map(e => parseInt(e.lrl * 100))
         this._myChart5.setOption({
           legend: {
             selected: {
@@ -112,6 +117,20 @@ export default {
               bar13: btnType == "4",
             },
           },
+          xAxis: {
+            data: xaxisData,
+          },
+          series: [
+            {
+              data: yaxisData,
+            },
+            {
+              data: yaxisData2,
+            },
+            {
+              data: yaxisData4,
+            },
+          ],
         })
       }
     },
@@ -483,6 +502,8 @@ export default {
       let seriesData1 = res.map(e => "_" + e.sbbh)
       let seriesData2 = res.map(e => e.ssdd)
       let seriesData3 = res.map(e => e.sblx)
+      let seriesData4 = res.map(e => e.last_cnt)
+      let seriesData5 = res.map(e => e.yes_cnt)
 
       // 蓝色渐变
       let colorArr = [
@@ -560,6 +581,24 @@ export default {
                   font-weight: 400;
                   padding-left: 10rem;">
                   所属大队：${params[3].value}</div>
+                <div
+                  style="display: flex;
+                  align-items: center;
+                  background: rgba(0, 170, 255, 0.3);
+                  height: 32rem;
+                  font-size: 16rem;
+                  font-weight: 400;
+                  padding-left: 10rem;">
+                  上期违法：${params[4].value}</div>
+                <div
+                  style="display: flex;
+                  align-items: center;
+                  background: rgba(0, 170, 255, 0.3);
+                  height: 32rem;
+                  font-size: 16rem;
+                  font-weight: 400;
+                  padding-left: 10rem;">
+                  本期违法：${params[5].value}</div>
               </div>
             </div>
             `
@@ -750,23 +789,24 @@ export default {
           },
           {
             type: "bar",
-            label: {
-              /* normal: {
-                show: true,
-                position: "top",
-                formatter: e => {
-                  return e.value
-                },
-                fontSize: 16,
-                color: "#43C4F1",
-                offset: [0, -5],
-              }, */
-            },
             itemStyle: {
               color: "transparent",
             },
-            tooltip: {},
             data: seriesData2,
+          },
+          {
+            type: "bar",
+            itemStyle: {
+              color: "transparent",
+            },
+            data: seriesData4,
+          },
+          {
+            type: "bar",
+            itemStyle: {
+              color: "transparent",
+            },
+            data: seriesData5,
           },
         ],
       }
@@ -781,12 +821,13 @@ export default {
       let res2 = await this.axiosRquest("zs_vio_handle_total_ol")
       // console.log("getChart5", res, res2)
       this.threeChartNum = [res2[0].lrzs, res2[0].hdzs, parseInt(res2[0].lrl * 100) + "%"]
-
-      let xaxisData = res.map(e => e.sxr || "-")
-      let yaxisData = res.map(e => e.hds || 0)
-      let yaxisData2 = res.map(e => e.lrs || 0)
-      let yaxisData3 = res.map(e => parseInt(e.lrl * 100) + "%")
-      let yaxisData4 = res.map(e => parseInt(e.lrl * 100))
+      this._chart5Data = res
+      let sortFlag = this.filterType == "1" ? "hdzs_rk" : this.filterType == "2" ? "hds_rk" : this.filterType == "3" ? "lrs_rk" : "lrl_rk"
+      let xaxisData = res.sort((a, b) => a[sortFlag] - b[sortFlag]).map(e => e.sxr || "-")
+      let yaxisData = res.sort((a, b) => a[sortFlag] - b[sortFlag]).map(e => e.hds || 0)
+      let yaxisData2 = res.sort((a, b) => a[sortFlag] - b[sortFlag]).map(e => e.lrs || 0)
+      // let yaxisData3 = res.map(e => parseInt(e.lrl * 100) + "%")
+      let yaxisData4 = res.sort((a, b) => a[sortFlag] - b[sortFlag]).map(e => parseInt(e.lrl * 100))
       const offsetX = 8
       const offsetY = 4
       // 绘制左侧面
@@ -940,7 +981,7 @@ export default {
                   font-weight: 400;
                   padding-left: 10rem;">
                   <span style="display: inline-block; width:8rem;height:8rem;border-radius:8rem;background:rgba(253, 231, 1, 1);margin-right:10rem;"></span>
-                  录入率：${parseInt(item.lrl * 100) + "%"}</div>
+                  核录率：${parseInt(item.lrl * 100) + "%"}</div>
               </div>
             </div>
             `
@@ -1313,7 +1354,7 @@ export default {
       this.get3Dpie()
       this.getChart4()
       this.getChart5()
-      console.log('right_setInterval');
+      console.log("right_setInterval")
     }, 60000 * 5)
   },
   mounted() {

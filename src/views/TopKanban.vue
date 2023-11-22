@@ -14,8 +14,8 @@
       </div>
       <div :style="{ opacity: i < 3 ? 0 : 1 }" class="percent_num">
         环比昨日
-        <span v-if="item.lastWeek == 0" class="orange-num">持平</span>
-        <span v-else :class="item.lastDay < 0 ? 'blue-num' : 'red-num'">{{ item.lastDay < 0 ? item.lastDay : "+" + item.lastDay }}%</span>
+        <span v-if="item.lastDay == 0" class="orange-num">持平</span>
+        <span v-else :class="item.lastDay < 0 ? 'blue-num' : 'red-num'">{{ item.lastDay < 0 ? item.lastDay : "+" + item.lastDay }}</span>
       </div>
     </div>
   </div>
@@ -58,6 +58,7 @@ export default {
     dataList: {
       handler(newVal) {
         if (newVal.length > 0) {
+          // console.log("采集数", newVal)
           this.kanbanList = [
             {
               name: "设备总数",
@@ -81,7 +82,7 @@ export default {
               name: "采集数",
               num: newVal.find(e => e.tag == 4).cnt,
               lastWeek: parseInt(newVal.find(e => e.tag == 4).ztb * 100),
-              lastDay: parseInt(newVal.find(e => e.tag == 4).rhb * 100),
+              lastDay: newVal.find(e => e.tag == 4).rhb,
             },
           ]
           this.takeChange()
@@ -131,7 +132,7 @@ export default {
   gap: 30rem;
   // border: 1px solid #fff;
   padding: 20rem;
-  background: rgba(16,27,58,0.5);
+  background: rgba(16, 27, 58, 0.5);
 
   .card_kanban {
     background: url(~@/assets/fbjsc/icon.png) left center/contain no-repeat;
