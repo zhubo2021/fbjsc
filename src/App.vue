@@ -135,7 +135,7 @@ export default {
       return axios.get(apiUrl + path)
     },
     pageTo() {
-      window.open("https://41.248.129.75/#/analyze/F1aAvZ1MTP/report-edit/vIKmkNk6Ne")
+      window.open("https://41.248.129.75/#/site-view/mpwPz8BMAI")
       // _map.clearOverlays()
     },
     computedREM() {
